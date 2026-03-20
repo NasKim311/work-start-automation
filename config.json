@@ -1,0 +1,59 @@
+{
+  "tasks": [
+    {
+      "type": "browser",
+      "value": "gitlab.com.bo.shinsegae.com/users/sign_in",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://calendar.google.com/calendar/u/0/r/month/2026/2/1?cid=c2hpbnNlZ2FlLnByajFAZ21haWwuY29t&pli=1",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://blossom.shinsegae.com/WebSite/WebMail/Mail/Default.aspx?system=Mail",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://docs.google.com/spreadsheets/d/1DMG2mfrAXB_ASgu7lmK4-mld6ti6Mij-PSoIyLNofBw/edit?gid=1205130403#gid=1205130403",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://docs.google.com/spreadsheets/d/1ftTMpRJQW0EEqU6E3XtpXi1Cjtum0VEKwGD30YtXKaQ/edit?gid=1012984274#gid=1012984274",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://www.notion.so/2fdf7b453bb4815aa8a6fb9fa7cdae5b?v=2fdf7b453bb481ac837a000cbf9c0bb2",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "redmine.com.bo.shinsegae.com/projects",
+      "delay": 1
+    },
+    {
+      "type": "browser",
+      "value": "https://www.figma.com/files/team/1303944158145400042/recents-and-sharing/shared-with-you?fuid=1167427814090599053",
+      "delay": 1
+    },
+    {
+      "type": "program",
+      "value": "code \"C:\\project\\SSGD_FE_FO\"",
+      "delay": 1
+    },
+    {
+      "type": "program",
+      "value": "code \"C:\\project\\SSGD_FE_BO\"",
+      "delay": 1
+    },
+    {
+      "type": "program",
+      "value": "C:\\Program Files\\Microsoft VS Code\\Code.exe",
+      "delay": 1
+    }
+  ]
+}
