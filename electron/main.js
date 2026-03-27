@@ -59,6 +59,25 @@ ipcMain.handle("run-tasks", async (_, tasks) => {
   }
 });
 
+// GET AUTO START STATUS
+ipcMain.handle("get-auto-start", async () => {
+  return app.getLoginItemSettings().openAtLogin;
+});
+
+// SET AUTO START STATUS
+ipcMain.handle("set-auto-start", async (_, openAtLogin) => {
+  app.setLoginItemSettings({
+    openAtLogin,
+    path: app.getPath("exe"),
+    args: ["--autostart"],
+  });
+});
+
+// CHECK IF STARTED VIA AUTOSTART
+ipcMain.handle("is-autostart", async () => {
+  return process.argv.includes("--autostart");
+});
+
 // FILE SELECT
 ipcMain.handle("select-file", async () => {
   const result = await dialog.showOpenDialog({

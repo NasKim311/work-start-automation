@@ -12,4 +12,7 @@ export interface ElectronAPI {
   saveConfig: (tasks: Task[]) => Promise<void>;
   loadConfig: () => Promise<Task[]>;
   selectFile: () => Promise<string | null>;
+  getAutoStart: () => Promise<boolean>;
+  setAutoStart: (val: boolean) => Promise<void>;
+  isAutoStart: () => Promise<boolean>;
 }
