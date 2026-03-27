@@ -2,6 +2,7 @@ export type TaskType = "browser" | "program";
 
 export type Task = {
   type: TaskType;
+  title?: string;
   value: string;
   delay: number;
 };
