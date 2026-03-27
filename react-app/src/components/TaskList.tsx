@@ -37,7 +37,7 @@ export default function TaskList({
               </div>
               
               <p className="text-gray-900 font-bold text-[17px] truncate tracking-tight" title={task.value}>
-                {task.value}
+                {task.title || task.value}
               </p>
             </div>
           </div>
