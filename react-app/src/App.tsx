@@ -10,6 +10,7 @@ declare global {
   }
 }
 
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -97,6 +98,11 @@ function App() {
               tasks={tasks}
               onRemove={(i) =>
                 setTasks((prev) => prev.filter((_, idx) => idx !== i))
+              }
+              onUpdate={(i, updatedTask) =>
+                setTasks((prev) =>
+                  prev.map((t, idx) => (idx === i ? updatedTask : t))
+                )
               }
               onMove={(from, to) => {
                 const copy = [...tasks];
