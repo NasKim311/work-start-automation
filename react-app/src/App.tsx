@@ -371,7 +371,8 @@ function App() {
               onMove={(from, to) => {
                 updateActiveTasks((prev) => {
                   const copy = [...prev];
-                  [copy[from], copy[to]] = [copy[to], copy[from]];
+                  const [moved] = copy.splice(from, 1);
+                  copy.splice(to, 0, moved);
                   return copy;
                 });
               }}
