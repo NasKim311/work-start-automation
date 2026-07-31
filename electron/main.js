@@ -17,10 +17,12 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
+const configPath = path.join(app.getPath("userData"), "config.json");
+
 // CONFIG LOAD
 ipcMain.handle("load-config", async () => {
   try {
-    const data = fs.readFileSync("./config.json");
+    const data = fs.readFileSync(configPath);
     return JSON.parse(data).tasks;
   } catch {
     return [];
@@ -29,7 +31,7 @@ ipcMain.handle("load-config", async () => {
 
 // CONFIG SAVE
 ipcMain.handle("save-config", async (_, tasks) => {
-  fs.writeFileSync("./config.json", JSON.stringify({ tasks }, null, 2));
+  fs.writeFileSync(configPath, JSON.stringify({ tasks }, null, 2));
 });
 
 // RUN TASKS
