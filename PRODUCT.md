@@ -35,13 +35,22 @@ program/executable path (including `code "<folder>"` to open a VS Code workspace
 
 - Two task types: `browser` (opens a URL in Chrome) and `program` (launches an .exe or a
   `code "<folder>"` command).
-- Per-task delay in seconds, cumulative across the list (not per-task).
-- Add, edit, delete, and reorder tasks; save/load the list; run on demand.
-- Optional auto-run at Windows login (`openAtLogin` + `--autostart` launch arg).
+- Per-task delay entered in seconds or minutes, stored in seconds, cumulative across the list
+  (not per-task).
+- Add, edit, delete (with confirmation), and reorder tasks (drag-and-drop or buttons); test-run
+  a single task immediately without waiting through the list's delay; save/load the list; run
+  on demand with live progress and a stop button; unsaved changes prompt before the window
+  closes; execution failures surface to the user instead of only `console.error`.
+- Multiple named routine sets ("profiles") can be created/renamed/deleted and switched between;
+  the profile that runs at Windows login is chosen independently of whichever one is currently
+  open in the UI.
+- Optional auto-run at Windows login (`openAtLogin` + `--autostart` launch arg), with an OS
+  notification announcing which set is starting.
+- Config can be exported to / imported from a JSON file for moving routine sets to another PC
+  (still not auto-synced between machines).
 - Windows-only today (shells out to `start chrome`, uses Windows login-item APIs).
 - Korean-only UI, by existing project convention.
-- Small solo-maintained codebase; no test suite; config persisted locally per Windows user
-  (not synced/shared between machines yet).
+- Small solo-maintained codebase; no test suite; no packaging (electron-builder) config yet.
 
 ## Brand Commitments
 
