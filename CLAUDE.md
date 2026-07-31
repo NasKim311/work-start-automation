@@ -26,15 +26,50 @@ npm start
 ```
 
 Other react-app commands: `npm run build` (tsc -b && vite build), `npm run lint` (eslint .),
-`npm run preview`.
+`npm run preview`, `npm run test` (Vitest, unit tests for pure logic in `src/utils.ts`).
 
-There is no test suite configured in either package.
+At the repo root: `npm run build` (builds `react-app/dist` by delegating into `react-app`),
+`npm run dist` (build + `electron-builder`, produces an NSIS installer and a portable `.exe`
+under `release/` — see "Packaging" below), `npm run test:e2e` (Playwright, drives the real
+Electron app end-to-end — see "E2E tests" below).
 
 Note: `electron/main.js`'s `createWindow` branches on `app.isPackaged` — unpackaged (dev) loads
-`http://localhost:5173` from the Vite dev server; packaged loads
-`react-app/dist/index.html` via `loadFile`, so `npm run build` must be run before packaging.
-There is no `electron-builder`/packaging config in `package.json` yet, so packaging itself
-isn't wired up — only the dev-vs-packaged load branch exists so far.
+`http://localhost:5173` from the Vite dev server; packaged loads `react-app/dist/index.html`
+via `loadFile`, so `react-app` must be built (`npm run build` at the repo root, or `cd react-app
+&& npm run build`) before packaging.
+
+### Packaging
+
+`electron-builder` is configured via the root `package.json`'s `"build"` field (`appId`,
+`productName: "DeskReady"`, Windows `nsis` + `portable` targets, output to `release/`).
+`npm run dist` builds the renderer then runs `electron-builder`. No app icon is configured yet
+(electron-builder falls back to its default Electron icon) — add one under `build.win.icon` if
+branding matters later. `electron` and `electron-builder` are `devDependencies` (not
+`dependencies`) deliberately — electron-builder replaces the Electron npm package with the
+platform binary at packaging time, so having it under `dependencies` risks bundling the ~300MB
+npm package into the app.
+
+### Tests
+
+- **Unit tests** (`react-app`, Vitest, `npm run test`): cover pure logic extracted into
+  `react-app/src/utils.ts` — `formatDelay`, `secondsToDisplay`/`displayToSeconds` (delay
+  seconds↔minutes conversion), `reorderTasks` (drag-and-drop / up-down-button reordering).
+  These are plain functions with no React/Electron dependency, kept in `utils.ts` specifically
+  so they're cheap to test in isolation — prefer extracting new pure logic there over inlining
+  it in a component when it's meaningfully testable.
+- **E2E tests** (repo root, `@playwright/test` + its `_electron` launcher, `npm run test:e2e`,
+  specs under `e2e/`): boot the real Electron app via `e2e/fixtures.ts`'s `test`/`page`
+  fixtures, each with an isolated temp `--user-data-dir` (and optionally a seeded
+  `config.json` via `test.use({ initialConfig: makeConfig([...]) })`) so tests never touch the
+  developer's real config. `playwright.config.ts`'s `webServer` starts/reuses the Vite dev
+  server on `:5173`, since unpackaged Electron always loads from there regardless of test
+  context.
+  **Fixture gotcha**: the `electronApp` fixture's teardown force-`destroy()`s all windows
+  before calling `app.close()`. If it only called `close()`, a test that leaves the app dirty
+  (any task add/remove/reorder without saving) would hit the real "저장 안 한 변경사항"
+  confirmation dialog on shutdown — a blocking native dialog nothing in the test would ever
+  answer, hanging until Playwright's teardown timeout. Don't remove that `destroy()` call
+  without accounting for this.
 
 ## Architecture
 
@@ -93,6 +128,14 @@ instead of no feedback at all while the cumulative delay elapses).
 Electron data dir), *not* a repo-relative file. A root-level `config.json` was previously
 committed by mistake and is being removed/gitignored — don't reintroduce a repo-root config
 file as a data store.
+
+`app.getPath("userData")` derives its folder name from `app.name`, which Electron resolves
+from the root `package.json`'s top-level `"productName"` field if present, otherwise `"name"`.
+Root `package.json` intentionally has **no top-level `productName`** — only `build.productName`
+(used by electron-builder for the packaged app/installer name) — because adding one changes
+the dev userData folder too (`electron .` would start reading/writing a different, empty
+`config.json` under a new folder name, silently orphaning whatever config already exists under
+the old one). Don't add a top-level `productName` without accounting for this.
 
 The config holds multiple named routine sets ("프로필"): `{ profiles: [{ id, name, tasks }],
 activeProfileId, autoStartProfileId }` (`react-app/src/types.ts`'s `AppConfig`/`Profile`).

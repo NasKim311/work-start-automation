@@ -61,12 +61,28 @@ npm install   # 저장소 루트에서
 npm start
 ```
 
-기타 `react-app` 명령어: `npm run build`, `npm run lint`, `npm run preview`.
-테스트 스위트는 아직 없습니다.
+기타 `react-app` 명령어: `npm run build`, `npm run lint`, `npm run preview`,
+`npm run test` (Vitest 유닛 테스트).
 
-패키징(electron-builder 등)은 아직 설정되어 있지 않습니다 — `npm run build`로 만든
-`react-app/dist` 결과물을 패키징된 앱이 로드하도록 하는 분기(`app.isPackaged`)만 준비된
-상태입니다.
+## 빌드 / 배포용 실행 파일 만들기
+
+```bash
+npm run dist   # 저장소 루트에서 — react-app 빌드 후 electron-builder 실행
+```
+
+`release/` 폴더에 설치 파일(`DeskReady Setup 1.0.0.exe`)과 포터블 실행 파일
+(`DeskReady 1.0.0.exe`)이 생성됩니다. 둘 다 소스코드나 Node.js 설치 없이 바로 실행할 수
+있어서, 동료·지인에게 배포할 때는 이 파일을 전달하면 됩니다.
+
+## 테스트
+
+```bash
+cd react-app && npm run test     # 유닛 테스트 (Vitest) — src/utils.ts의 순수 로직
+npm run test:e2e                 # 저장소 루트 — E2E 테스트 (Playwright, 실제 Electron 앱 구동)
+```
+
+E2E 테스트는 임시 사용자 데이터 폴더를 매번 새로 만들어 실행되므로 실제 사용 중인 설정을
+건드리지 않습니다. 자세한 내용은 [`CLAUDE.md`](CLAUDE.md)의 "Tests" 절을 참고하세요.
 
 ## 디자인 시스템
 
@@ -76,9 +92,9 @@ UI는 "모닝 노트" 디자인 시스템을 따릅니다 (네이비 히어로 �
 
 ## 알려진 제한사항 / 다음 할 일
 
-TODO.md에 정리했던 개선 후보 11개는 모두 반영되었습니다. 패키징(electron-builder 등) 설정과
-테스트 스위트는 아직 없는 상태입니다. 새로운 개선 아이디어는 [`TODO.md`](TODO.md)에
-추가해 주세요.
+TODO.md에 정리했던 개선 후보 11개는 모두 반영되었고, 패키징과 테스트 스위트도 갖춰졌습니다.
+앱 아이콘은 아직 기본값(Electron 기본 아이콘)입니다. 새로운 개선 아이디어는
+[`TODO.md`](TODO.md)에 추가해 주세요.
 
 ## 참고 문서
 

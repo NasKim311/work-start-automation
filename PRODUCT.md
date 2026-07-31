@@ -50,7 +50,9 @@ program/executable path (including `code "<folder>"` to open a VS Code workspace
   (still not auto-synced between machines).
 - Windows-only today (shells out to `start chrome`, uses Windows login-item APIs).
 - Korean-only UI, by existing project convention.
-- Small solo-maintained codebase; no test suite; no packaging (electron-builder) config yet.
+- Small solo-maintained codebase; Vitest unit tests + Playwright E2E tests cover the core
+  flows; electron-builder produces a Windows installer and portable exe (no custom app icon
+  yet, uses Electron's default).
 
 ## Brand Commitments
 
