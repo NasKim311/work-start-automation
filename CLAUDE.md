@@ -49,6 +49,12 @@ branding matters later. `electron` and `electron-builder` are `devDependencies` 
 platform binary at packaging time, so having it under `dependencies` risks bundling the ~300MB
 npm package into the app.
 
+`react-app/vite.config.ts` sets `base: "./"`. Without it, Vite's production build emits
+absolute asset paths (`/assets/index-*.js`) which resolve fine on a dev server but break under
+`loadFile()`'s `file://` protocol in a packaged app — the window opens (title bar shows
+correctly) but renders completely blank, since the JS/CSS never load. If a packaged build ever
+shows a blank window again, check this first before anything else.
+
 ### Tests
 
 - **Unit tests** (`react-app`, Vitest, `npm run test`): cover pure logic extracted into
