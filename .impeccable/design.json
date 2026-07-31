@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-31T00:00:00.000Z",
+  "title": "Design System: DeskReady",
+  "extensions": {
+    "colorMeta": {
+      "ink-navy": {
+        "role": "primary",
+        "displayName": "Ink Navy",
+        "canonical": "#1F2A44",
+        "tonalRamp": ["#080B12", "#101625", "#1F2A44", "#2E3E63", "#425682", "#6478A0", "#96A5C2", "#D0D8E8"]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Coral",
+        "canonical": "#C9634A",
+        "tonalRamp": ["#2E1309", "#521F0F", "#7A2E16", "#A34423", "#C9634A", "#D98A73", "#E8B3A2", "#F5DCD3"]
+      },
+      "paper-cream": {
+        "role": "neutral",
+        "displayName": "Paper Cream",
+        "canonical": "#FBF6EC",
+        "tonalRamp": ["#141210", "#2B2620", "#4F463A", "#7C6E5A", "#A99A7E", "#CFC3AA", "#E9E1D0", "#FBF6EC"]
+      },
+      "card-cream": {
+        "role": "neutral",
+        "displayName": "Card Cream",
+        "canonical": "#FFFDF8",
+        "tonalRamp": ["#171613", "#312E27", "#57503F", "#847A62", "#B0A688", "#D4CBB2", "#EFEADD", "#FFFDF8"]
+      },
+      "rule-tan": {
+        "role": "neutral",
+        "displayName": "Rule Tan",
+        "canonical": "#D8CBAE",
+        "tonalRamp": ["#191510", "#332B1E", "#59492F", "#856E48", "#AB9469", "#C7B692", "#DED0B8", "#F0E9DA"]
+      },
+      "input-tan": {
+        "role": "neutral",
+        "displayName": "Input Tan",
+        "canonical": "#B9AC8C",
+        "tonalRamp": ["#141109", "#292112", "#473A22", "#6C5B35", "#907B4B", "#B9AC8C", "#D3C9AF", "#EAE4D5"]
+      },
+      "meta-tan": {
+        "role": "neutral",
+        "displayName": "Meta Tan",
+        "canonical": "#A79C7F",
+        "tonalRamp": ["#121009", "#241F13", "#3F3722", "#5F5233", "#7F6E45", "#A79C7F", "#C7BEA5", "#E4DECC"]
+      },
+      "label-ink": {
+        "role": "neutral",
+        "displayName": "Label Ink",
+        "canonical": "#5B5340",
+        "tonalRamp": ["#0D0C09", "#1A1811", "#2F2B1F", "#453F2E", "#5B5340", "#847A5C", "#AEA285", "#D6CFB9"]
+      },
+      "body-ink": {
+        "role": "neutral",
+        "displayName": "Body Ink",
+        "canonical": "#8A8065",
+        "tonalRamp": ["#0F0D09", "#1F1C13", "#373120", "#514930", "#6B6142", "#8A8065", "#B0A889", "#D6D1BC"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The \"DeskReady\" wordmark only — nowhere else." },
+      "label": { "displayName": "Section Label", "purpose": "Uppercase coral card headers, no background/border." },
+      "body": { "displayName": "Body / UI", "purpose": "All functional text: titles, buttons, inputs, meta." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 12px 30px rgba(31,42,68,0.08)", "purpose": "The one shadow in the system, on note cards only." }
+    ],
+    "motion": [
+      { "name": "stamp-hover", "value": "background-color 0.2s", "purpose": "Primary stamp fills solid coral on hover." },
+      { "name": "toggle-slide", "value": "left 0.2s", "purpose": "Toggle dot sliding between off/on." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Stamp Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single call-to-action per card (e.g. \"출근 시작하기\").",
+      "html": "<button class=\"ds-stamp-primary\">출근 시작하기</button>",
+      "css": ".ds-stamp-primary { border: 2px solid #C9634A; color: #C9634A; font-weight: 700; font-family: 'Pretendard Variable', sans-serif; border-radius: 6px; background: transparent; padding: 10px 28px; transform: rotate(-1deg); transition: background-color 0.2s, color 0.2s; cursor: pointer; } .ds-stamp-primary:hover { background: #C9634A; color: #FFFDF8; } .ds-stamp-primary:focus-visible { outline: 2px solid #1F2A44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Stamp Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Lower-emphasis action (e.g. \"설정 저장\").",
+      "html": "<button class=\"ds-stamp-secondary\">설정 저장</button>",
+      "css": ".ds-stamp-secondary { border: 1.5px solid #B9AC8C; color: #5B5340; font-weight: 700; font-family: 'Pretendard Variable', sans-serif; border-radius: 6px; background: transparent; padding: 10px 22px; transition: background-color 0.2s; cursor: pointer; } .ds-stamp-secondary:hover { background: #F1EADA; }"
+    },
+    {
+      "name": "Underline Input",
+      "kind": "input",
+      "refersTo": "input-underline",
+      "description": "Text/URL/delay fields — a mark on paper, not a filled pill.",
+      "html": "<input class=\"ds-underline-input\" placeholder=\"주소 입력 (ex: https://naver.com)\" />",
+      "css": ".ds-underline-input { background: transparent; border: none; border-bottom: 1.5px solid #B9AC8C; padding: 8px 4px; font-weight: 600; color: #1F2A44; font-family: 'Pretendard Variable', sans-serif; width: 100%; } .ds-underline-input::placeholder { color: #A79C7F; } .ds-underline-input:focus { outline: none; border-bottom-color: #C9634A; }"
+    },
+    {
+      "name": "Type Tab",
+      "kind": "custom",
+      "refersTo": "type-tab",
+      "description": "웹사이트/프로그램 task-type switch — plain text tabs, not a segmented pill.",
+      "html": "<div style=\"display:flex;gap:24px\"><button class=\"ds-type-tab active\">🌐 웹 사이트</button><button class=\"ds-type-tab\">💻 프로그램</button></div>",
+      "css": ".ds-type-tab { font-size: 13px; font-weight: 700; color: #B9AC8C; background: transparent; border: none; padding: 4px 2px; border-bottom: 2px solid transparent; font-family: 'Pretendard Variable', sans-serif; cursor: pointer; } .ds-type-tab.active { color: #C9634A; border-bottom-color: #C9634A; }"
+    },
+    {
+      "name": "Toggle Switch",
+      "kind": "custom",
+      "refersTo": "toggle-switch",
+      "description": "Auto-start-on-login control — the one pill kept in the system.",
+      "html": "<button class=\"ds-toggle\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-toggle-dot\" style=\"left:22px\"></span></button>",
+      "css": ".ds-toggle { width: 40px; height: 22px; border-radius: 9999px; border: 1.5px solid #C9634A; position: relative; background: transparent; cursor: pointer; } .ds-toggle-dot { width: 14px; height: 14px; border-radius: 9999px; background: #C9634A; position: absolute; top: 2px; transition: left 0.2s; }"
+    },
+    {
+      "name": "Task Row",
+      "kind": "custom",
+      "refersTo": "task-row",
+      "description": "A single routine item — a checklist line, not a card.",
+      "html": "<div class=\"ds-row\"><div class=\"ds-row-icon\">🌐</div><div><p class=\"ds-row-title\">GitLab</p><p class=\"ds-row-meta\">웹사이트 · 대기 1초</p></div></div>",
+      "css": ".ds-row { display: flex; align-items: center; gap: 16px; padding: 16px 4px; border-bottom: 1.5px dashed #D8CBAE; } .ds-row-icon { width: 36px; height: 36px; border-radius: 9999px; background: rgba(201,99,74,0.1); color: #C9634A; display: flex; align-items: center; justify-content: center; } .ds-row-title { font-weight: 700; color: #1F2A44; font-family: 'Pretendard Variable', sans-serif; margin: 0; } .ds-row-meta { font-size: 12px; color: #A79C7F; margin: 2px 0 0; }"
+    },
+    {
+      "name": "Note Card",
+      "kind": "card",
+      "refersTo": "note-card",
+      "description": "The page's one card surface — hosts every section (settings, form, list).",
+      "html": "<div class=\"ds-card\"><span class=\"ds-label\">오늘의 설정</span></div>",
+      "css": ".ds-card { background: #FFFDF8; border: 1.5px dashed #D8CBAE; border-radius: 24px; padding: 28px; box-shadow: 0 12px 30px rgba(31,42,68,0.08); } .ds-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #C9634A; text-transform: uppercase; font-family: 'Pretendard Variable', sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Morning Page",
+    "overview": "DeskReady reads as a page torn from a personal paper planner, not a piece of software chrome. A solid ink-navy band opens each screen like a notebook's cover strip; everything below sits on faintly ruled cream paper inside dashed-border note cards, as if hand-organized the night before. The one accent — a warm coral \"stamp\" — marks the single action that matters on a given card, echoing a rubber stamp or a felt-tip check mark rather than a UI button. The system replaces the product's earlier \"Jinjja Seoul\" teal-and-pill identity outright; that look is retired and should not be reintroduced or blended with this one.",
+    "keyCharacteristics": [
+      "Paper, not glass: dashed borders and ruled-line texture stand in for shadows and gradients",
+      "One handwritten voice (Caveat) reserved for the \"DeskReady\" wordmark only; everything else reads in the product's existing Korean-first sans (Pretendard) at a confident bold weight",
+      "A single warm accent (coral) does double duty as ink color and the only \"stamped\" fill",
+      "Controls behave like marks on paper — underlines, ticks, and stamps — not glossy pill chrome"
+    ],
+    "rules": [
+      { "name": "The One Stamp Rule", "body": "Coral fill (not just coral text) appears on at most one button per card — the primary action. Everything else stays an outline or plain text.", "section": "colors" },
+      { "name": "The Handwriting Is Singular Rule", "body": "Caveat renders exactly one string on screen at a time (the wordmark). A second handwritten element would turn a signature into a costume.", "section": "typography" },
+      { "name": "The Paper, Not Glass Rule", "body": "Reach for a dashed border or a ruled line before reaching for a shadow or gradient. Shadows are for the page-level card only.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep coral fill to one stamp button per card; everything else stays outline or text.",
+      "Do use dashed borders and ruled-line texture as the system's primary depth cue.",
+      "Do keep Caveat to the single \"DeskReady\" wordmark.",
+      "Do style form controls as marks on paper (underlines, stamps, ticks), not glossy chrome."
+    ],
+    "donts": [
+      "Don't reintroduce the retired teal (#0082B2) / bright-orange (#E54D26) pill system — it is fully replaced, not a fallback.",
+      "Don't add card shadows or hover-lift to individual task rows; the list card carries the one shadow in the system.",
+      "Don't use a second handwritten or display font anywhere else on the page.",
+      "Don't round buttons into pills; stamps are rectangular with a small radius."
+    ]
+  }
+}
