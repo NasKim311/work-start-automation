@@ -20,4 +20,8 @@ export interface ElectronAPI {
   onTaskError: (
     callback: (data: { task: Task; message: string }) => void
   ) => () => void;
+  onTaskStarted: (
+    callback: (data: { task: Task; index: number; total: number }) => void
+  ) => () => void;
+  onRunFinished: (callback: () => void) => () => void;
 }

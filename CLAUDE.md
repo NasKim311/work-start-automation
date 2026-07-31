@@ -61,7 +61,10 @@ list's cumulative delay; shares the `runSingleTask` execution logic with `run-ta
 discards unsaved changes; see `win.on("close", ...)` in `createWindow`), `task-execution-error`
 (one-way, main → renderer via `sender.send(...)`/`ipcRenderer.on(...)` — `run-tasks` reports
 each `execFile`/`exec` failure back to the renderer that invoked it, since main-process
-`console.error` alone is invisible in a packaged build with no devtools).
+`console.error` alone is invisible in a packaged build with no devtools), `task-started` and
+`run-tasks-finished` (one-way, main → renderer — `run-tasks` reports which task is about to
+run and when the last one has fired, so the "출근 시작하기" button can show live progress
+instead of no feedback at all while the cumulative delay elapses).
 
 **Task model** (`react-app/src/types.ts`): `{ type: "browser" | "program", title?, value, delay }`.
 - `type: "browser"` runs `chrome "<value>"` via `execFile("cmd.exe", ["/c", "start", "chrome", ...])`;

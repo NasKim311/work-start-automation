@@ -16,6 +16,10 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [autoStartEnabled, setAutoStartEnabled] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [runningTaskTitle, setRunningTaskTitle] = useState<string | null>(null);
+
+  const totalDelaySeconds = tasks.reduce((sum, t) => sum + (t.delay || 0), 0);
 
   useEffect(() => {
     try {
@@ -30,6 +34,20 @@ function App() {
       alert(`"${task.title || task.value}" 실행에 실패했습니다.\n${message}`);
     });
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeStarted = window.electronAPI.onTaskStarted(({ task }) => {
+      setRunningTaskTitle(task.title || task.value);
+    });
+    const unsubscribeFinished = window.electronAPI.onRunFinished(() => {
+      setIsRunning(false);
+      setRunningTaskTitle(null);
+    });
+    return () => {
+      unsubscribeStarted();
+      unsubscribeFinished();
+    };
   }, []);
 
   useEffect(() => {
@@ -111,14 +129,28 @@ function App() {
                 {isSaving ? '저장 완료' : '설정 저장'}
               </button>
               <button
-                onClick={() => window.electronAPI.runTasks(tasks)}
+                onClick={() => {
+                  setIsRunning(true);
+                  setRunningTaskTitle(null);
+                  window.electronAPI.runTasks(tasks);
+                }}
+                disabled={isRunning || tasks.length === 0}
                 className="mn-stamp-primary px-7 py-2.5 flex items-center gap-2"
               >
                 <Play className="w-4 h-4 fill-current" />
-                출근 시작하기
+                {isRunning
+                  ? runningTaskTitle
+                    ? `실행 중: ${runningTaskTitle}`
+                    : "실행 준비 중..."
+                  : "출근 시작하기"}
               </button>
             </div>
           </div>
+          {tasks.length > 0 && (
+            <p className="text-xs font-bold text-right mt-2" style={{ color: "#A79C7F" }}>
+              총 예상 소요시간 {totalDelaySeconds}초
+            </p>
+          )}
         </div>
 
         {/* Curation Form Card */}

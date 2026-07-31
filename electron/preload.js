@@ -16,4 +16,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("task-execution-error", listener);
     return () => ipcRenderer.removeListener("task-execution-error", listener);
   },
+  onTaskStarted: (callback) => {
+    const listener = (_, data) => callback(data);
+    ipcRenderer.on("task-started", listener);
+    return () => ipcRenderer.removeListener("task-started", listener);
+  },
+  onRunFinished: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("run-tasks-finished", listener);
+    return () => ipcRenderer.removeListener("run-tasks-finished", listener);
+  },
 });

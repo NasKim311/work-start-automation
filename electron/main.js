@@ -126,15 +126,21 @@ ipcMain.handle("run-tasks", async (event, tasks) => {
   const sender = event.sender;
   let totalDelay = 0;
 
-  for (const task of tasks) {
+  tasks.forEach((task, index) => {
     totalDelay += task.delay || 0;
 
     const timeoutId = setTimeout(() => {
+      if (!sender.isDestroyed()) {
+        sender.send("task-started", { task, index, total: tasks.length });
+      }
       runSingleTask(task, sender);
+      if (index === tasks.length - 1 && !sender.isDestroyed()) {
+        sender.send("run-tasks-finished");
+      }
     }, totalDelay * 1000); // 👉 초 단위 적용
 
     pendingTimeouts.push(timeoutId);
-  }
+  });
 });
 
 // RUN SINGLE TASK (딜레이 무시하고 즉시 실행 — 목록 전체를 안 돌리고 개별 확인용)
