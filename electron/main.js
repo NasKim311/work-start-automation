@@ -28,7 +28,8 @@ const configPath = path.join(app.getPath("userData"), "config.json");
 ipcMain.handle("load-config", async () => {
   try {
     const data = fs.readFileSync(configPath);
-    return JSON.parse(data).tasks;
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed.tasks) ? parsed.tasks : [];
   } catch {
     return [];
   }
