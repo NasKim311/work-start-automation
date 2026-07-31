@@ -15,4 +15,5 @@ export interface ElectronAPI {
   getAutoStart: () => Promise<boolean>;
   setAutoStart: (val: boolean) => Promise<void>;
   isAutoStart: () => Promise<boolean>;
+  notifyDirtyState: (tasks: Task[], dirty: boolean) => void;
 }

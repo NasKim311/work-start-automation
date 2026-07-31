@@ -49,12 +49,14 @@ Two separate npm packages, not a workspace:
 **IPC boundary** — the renderer never touches Node/Electron APIs directly; everything goes
 through `electron/preload.js`'s `contextBridge`-exposed `window.electronAPI`. Any new IPC
 capability requires changes in three places kept in sync by hand:
-1. `ipcMain.handle(...)` in `electron/main.js`
+1. `ipcMain.handle(...)` (or `ipcMain.on(...)` for one-way notifications) in `electron/main.js`
 2. the matching bridge method in `electron/preload.js`
 3. the `ElectronAPI` interface in `react-app/src/types.ts`
 
 Current channels: `load-config`, `save-config`, `run-tasks`, `select-file`, `get-auto-start`,
-`set-auto-start`, `is-autostart`.
+`set-auto-start`, `is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
+— renderer reports its current tasks + dirty flag so `main.js` can warn before a window close
+discards unsaved changes; see `win.on("close", ...)` in `createWindow`).
 
 **Task model** (`react-app/src/types.ts`): `{ type: "browser" | "program", title?, value, delay }`.
 - `type: "browser"` runs `chrome "<value>"` via `execFile("cmd.exe", ["/c", "start", "chrome", ...])`;

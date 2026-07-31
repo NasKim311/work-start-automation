@@ -15,6 +15,15 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [autoStartEnabled, setAutoStartEnabled] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    try {
+      window.electronAPI.notifyDirtyState(tasks, hasUnsavedChanges);
+    } catch (error) {
+      console.error("변경사항 상태 전달 실패:", error);
+    }
+  }, [tasks, hasUnsavedChanges]);
 
   useEffect(() => {
     const init = async () => {
@@ -41,6 +50,7 @@ function App() {
     setIsSaving(true);
     try {
       await window.electronAPI.saveConfig(tasks);
+      setHasUnsavedChanges(false);
       setTimeout(() => setIsSaving(false), 500);
     } catch (error) {
       console.error("설정 저장 실패:", error);
@@ -107,7 +117,12 @@ function App() {
         {/* Curation Form Card */}
         <div className="mn-card p-6 sm:p-8">
           <span className="mn-label mb-5">새로운 작업 추가</span>
-          <TaskForm onAdd={(task) => setTasks((prev) => [...prev, task])} />
+          <TaskForm
+            onAdd={(task) => {
+              setTasks((prev) => [...prev, task]);
+              setHasUnsavedChanges(true);
+            }}
+          />
         </div>
 
         {/* Task List Section */}
@@ -125,18 +140,21 @@ function App() {
           ) : (
             <TaskList
               tasks={tasks}
-              onRemove={(i) =>
-                setTasks((prev) => prev.filter((_, idx) => idx !== i))
-              }
-              onUpdate={(i, updatedTask) =>
+              onRemove={(i) => {
+                setTasks((prev) => prev.filter((_, idx) => idx !== i));
+                setHasUnsavedChanges(true);
+              }}
+              onUpdate={(i, updatedTask) => {
                 setTasks((prev) =>
                   prev.map((t, idx) => (idx === i ? updatedTask : t))
-                )
-              }
+                );
+                setHasUnsavedChanges(true);
+              }}
               onMove={(from, to) => {
                 const copy = [...tasks];
                 [copy[from], copy[to]] = [copy[to], copy[from]];
                 setTasks(copy);
+                setHasUnsavedChanges(true);
               }}
             />
           )}

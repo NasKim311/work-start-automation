@@ -3,6 +3,14 @@ const { exec, execFile } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+let isDirty = false;
+let latestTasks = [];
+
+ipcMain.on("notify-dirty-state", (_, { tasks, dirty }) => {
+  latestTasks = tasks;
+  isDirty = dirty;
+});
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -17,6 +25,33 @@ function createWindow() {
   } else {
     win.loadURL("http://localhost:5173");
   }
+
+  // 저장 안 한 변경사항이 있는 채로 창을 닫으면 조용히 소실되는 문제 방지
+  win.on("close", (e) => {
+    if (!isDirty) return;
+
+    e.preventDefault();
+
+    const choice = dialog.showMessageBoxSync(win, {
+      type: "question",
+      buttons: ["저장하고 닫기", "저장하지 않고 닫기", "취소"],
+      defaultId: 0,
+      cancelId: 2,
+      noLink: true,
+      message: "저장하지 않은 변경사항이 있어요",
+      detail: "지금 닫으면 변경사항이 사라집니다.",
+    });
+
+    if (choice === 0) {
+      saveConfigToDisk(latestTasks);
+      isDirty = false;
+      win.destroy();
+    } else if (choice === 1) {
+      isDirty = false;
+      win.destroy();
+    }
+    // choice === 2 (취소): 아무 것도 하지 않고 창을 유지
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -27,6 +62,10 @@ app.on("window-all-closed", () => {
 });
 
 const configPath = path.join(app.getPath("userData"), "config.json");
+
+function saveConfigToDisk(tasks) {
+  fs.writeFileSync(configPath, JSON.stringify({ tasks }, null, 2));
+}
 
 // CONFIG LOAD
 ipcMain.handle("load-config", async () => {
@@ -41,7 +80,7 @@ ipcMain.handle("load-config", async () => {
 
 // CONFIG SAVE
 ipcMain.handle("save-config", async (_, tasks) => {
-  fs.writeFileSync(configPath, JSON.stringify({ tasks }, null, 2));
+  saveConfigToDisk(tasks);
 });
 
 // RUN TASKS

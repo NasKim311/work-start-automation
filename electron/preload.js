@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAutoStart: () => ipcRenderer.invoke("get-auto-start"),
   setAutoStart: (val) => ipcRenderer.invoke("set-auto-start", val),
   isAutoStart: () => ipcRenderer.invoke("is-autostart"),
+  notifyDirtyState: (tasks, dirty) =>
+    ipcRenderer.send("notify-dirty-state", { tasks, dirty }),
 });
