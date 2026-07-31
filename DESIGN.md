@@ -169,8 +169,10 @@ is the truest real-world referent for an on/off control.
   system-wide.
 
 ### Toggle Switch
-- **Style:** transparent pill track with a coral border, coral dot that slides — the one pill
-  shape kept in the system, used only for the physical-switch-like auto-start control.
+- **Style:** pill track with a coral border, coral dot that slides — the one pill shape kept
+  in the system, used only for the physical-switch-like auto-start control. Off: transparent
+  track, coral dot. On: track fills solid coral and the dot switches to cream, so on/off reads
+  at a glance instead of relying on dot position alone.
 
 ### Task Rows
 - **Style:** no card, no shadow, no hover-lift. Each row is icon (line-drawn, in a coral-tinted

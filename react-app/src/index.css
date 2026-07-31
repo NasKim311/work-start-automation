@@ -98,6 +98,10 @@ body {
   position: relative;
   background: transparent;
   flex-shrink: 0;
+  transition: background 0.2s;
+}
+.mn-toggle-track.on {
+  background: #C9634A;
 }
 .mn-toggle-dot {
   width: 14px;
@@ -106,7 +110,10 @@ body {
   background: #C9634A;
   position: absolute;
   top: 2px;
-  transition: left 0.2s;
+  transition: left 0.2s, background 0.2s;
+}
+.mn-toggle-track.on .mn-toggle-dot {
+  background: #FFFDF8;
 }
 
 .mn-type-tab {

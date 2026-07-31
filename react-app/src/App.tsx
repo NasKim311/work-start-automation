@@ -339,7 +339,7 @@ function App() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold" style={{ color: "#5B5340" }}>윈도우 시작 시 자동 실행</span>
-              <button onClick={toggleAutoStart} className="mn-toggle-track">
+              <button onClick={toggleAutoStart} className={`mn-toggle-track ${autoStartEnabled ? "on" : ""}`}>
                 <span
                   className="mn-toggle-dot"
                   style={{ left: autoStartEnabled ? 22 : 3 }}
