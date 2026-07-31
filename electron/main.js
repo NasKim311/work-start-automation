@@ -40,13 +40,19 @@ ipcMain.handle("save-config", async (_, tasks) => {
 });
 
 // RUN TASKS
+let pendingTimeouts = [];
+
 ipcMain.handle("run-tasks", async (_, tasks) => {
+  // 이전 실행에서 예약된 작업이 남아있다면 취소하여 중복 실행 방지
+  pendingTimeouts.forEach(clearTimeout);
+  pendingTimeouts = [];
+
   let totalDelay = 0;
 
   for (const task of tasks) {
     totalDelay += task.delay || 0;
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       try {
         if (task.type === "browser") {
           // execFile로 실행해 URL에 특수문자가 있어도 셸 인젝션 없이 안전하게 처리
@@ -70,6 +76,8 @@ ipcMain.handle("run-tasks", async (_, tasks) => {
         console.error("실행 오류:", e);
       }
     }, totalDelay * 1000); // 👉 초 단위 적용
+
+    pendingTimeouts.push(timeoutId);
   }
 });
 
