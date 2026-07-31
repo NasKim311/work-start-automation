@@ -155,11 +155,22 @@ auto-migrates the old single-list `{ tasks: [...] }` shape into a one-profile `A
 "기본") the first time it's read, and immediately persists the migrated shape so this only
 happens once.
 
-**Auto-start on Windows login** — `set-auto-start` uses
-`app.setLoginItemSettings({ openAtLogin, path: app.getPath("exe"), args: ["--autostart"] })`.
-On launch, the renderer checks `is-autostart` (which just checks `process.argv` for
-`--autostart`) and if true, immediately calls `run-tasks` with the loaded config — this is the
-entire "automation" trigger path, there's no separate scheduler/daemon.
+**Auto-start on Windows login** — `set-auto-start` uses `app.setLoginItemSettings({
+openAtLogin, path: app.getPath("exe"), args: autoStartArgs })`. On launch, the renderer checks
+`is-autostart` (which just checks `process.argv` for `--autostart`) and if true, immediately
+calls `run-tasks` with the loaded config — this is the entire "automation" trigger path,
+there's no separate scheduler/daemon.
+
+`autoStartArgs` (module-level in `main.js`) is `["--autostart"]` when packaged, but
+`[app.getAppPath(), "--autostart"]` when unpackaged. Unpackaged, `path` resolves to the generic
+`electron.exe` binary, not to this app — without the app path as an argument, Windows would
+launch bare Electron at login with no idea which app to load. `get-auto-start` passes the same
+`autoStartArgs` to `app.getLoginItemSettings({ args: autoStartArgs })`: Windows treats a login
+item with different `args` as a *different* entry, so if get/set ever pass mismatched args,
+`openAtLogin` reads back `false` even right after a successful `set-auto-start` — the toggle
+looks broken (and silently resets to off on every restart) even though the registry entry is
+correct. Keep get/set using the exact same `autoStartArgs` value if this code changes.
+`e2e/autostart.spec.ts` regression-tests the toggle surviving an app restart.
 
 **Component structure** (`react-app/src/`): `App.tsx` owns all task state (load/save/run/reorder)
 and passes callbacks down; `TaskForm.tsx` and the edit-mode UI in `TaskList.tsx` both wrap the

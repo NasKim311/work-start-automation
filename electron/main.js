@@ -175,9 +175,18 @@ ipcMain.handle("stop-tasks", async () => {
   clearPendingTasks();
 });
 
+// 패키징된 앱은 exe 경로 자체가 곧 앱이라 인자로 --autostart만 있으면 되지만,
+// 개발 모드(electron .)는 electron.exe가 범용 실행기라 이 프로젝트 경로를 인자로
+// 같이 넘겨야 부팅 시 실제로 DeskReady가 로드된다. get/set이 서로 다른 args로
+// 로그인 항목을 조회/등록하면 Windows가 다른 항목으로 취급해 상태 조회가
+// 어긋나므로 항상 동일한 args를 써야 한다.
+const autoStartArgs = app.isPackaged
+  ? ["--autostart"]
+  : [app.getAppPath(), "--autostart"];
+
 // GET AUTO START STATUS
 ipcMain.handle("get-auto-start", async () => {
-  return app.getLoginItemSettings().openAtLogin;
+  return app.getLoginItemSettings({ args: autoStartArgs }).openAtLogin;
 });
 
 // SET AUTO START STATUS
@@ -185,7 +194,7 @@ ipcMain.handle("set-auto-start", async (_, openAtLogin) => {
   app.setLoginItemSettings({
     openAtLogin,
     path: app.getPath("exe"),
-    args: ["--autostart"],
+    args: autoStartArgs,
   });
 });
 
