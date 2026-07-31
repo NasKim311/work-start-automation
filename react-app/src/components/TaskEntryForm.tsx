@@ -20,6 +20,26 @@ export default function TaskEntryForm({
   const [task, setTask] = useState<Task>(
     initialValues || { type: "browser", title: "", value: "", delay: 1 }
   );
+  // delay는 항상 초 단위로 저장한다 — 분 단위는 입력 편의를 위한 표시 방식일 뿐,
+  // 기존에 저장된 설정 및 main.js의 누적 딜레이 계산과 호환되도록 유지한다.
+  const [delayUnit, setDelayUnit] = useState<"sec" | "min">(
+    task.delay > 0 && task.delay % 60 === 0 ? "min" : "sec"
+  );
+
+  const delayDisplayValue = delayUnit === "min" ? task.delay / 60 : task.delay;
+
+  const handleDelayChange = (raw: string) => {
+    const num = Number(raw);
+    if (Number.isNaN(num)) return;
+    setTask((prev) => ({
+      ...prev,
+      delay: delayUnit === "min" ? Math.round(num * 60) : num,
+    }));
+  };
+
+  const toggleDelayUnit = () => {
+    setDelayUnit((prev) => (prev === "sec" ? "min" : "sec"));
+  };
 
 
   const selectFile = async () => {
@@ -101,12 +121,21 @@ export default function TaskEntryForm({
               <input
                 type="number"
                 min="0"
-                value={task.delay}
-                onChange={(e) => setTask((prev) => ({ ...prev, delay: Number(e.target.value) }))}
+                step={delayUnit === "min" ? 0.5 : 1}
+                value={delayDisplayValue}
+                onChange={(e) => handleDelayChange(e.target.value)}
                 className="mn-underline-input text-center"
-                style={{ width: 64, paddingRight: 20 }}
+                style={{ width: 64, paddingRight: 24 }}
               />
-              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold" style={{ color: "#A79C7F" }}>초</span>
+              <button
+                type="button"
+                onClick={toggleDelayUnit}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold underline"
+                style={{ color: "#A79C7F" }}
+                title="단위 전환 (초/분)"
+              >
+                {delayUnit === "min" ? "분" : "초"}
+              </button>
             </div>
             <div className="flex gap-2 ml-2">
               <button
@@ -188,12 +217,21 @@ export default function TaskEntryForm({
           <input
             type="number"
             min="0"
-            value={task.delay}
-            onChange={(e) => setTask((prev) => ({ ...prev, delay: Number(e.target.value) }))}
+            step={delayUnit === "min" ? 0.5 : 1}
+            value={delayDisplayValue}
+            onChange={(e) => handleDelayChange(e.target.value)}
             className="mn-underline-input text-center"
-            style={{ paddingRight: 24 }}
+            style={{ paddingRight: 28 }}
           />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 text-xs font-bold" style={{ color: "#A79C7F" }}>초</div>
+          <button
+            type="button"
+            onClick={toggleDelayUnit}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-xs font-bold underline"
+            style={{ color: "#A79C7F" }}
+            title="단위 전환 (초/분)"
+          >
+            {delayUnit === "min" ? "분" : "초"}
+          </button>
         </div>
 
         <div className="md:col-span-2">

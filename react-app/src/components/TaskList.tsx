@@ -3,6 +3,13 @@ import type { Task } from "../types";
 import { ArrowUp, ArrowDown, Trash2, Pencil, Check, Globe, Monitor, Play, GripVertical } from "lucide-react";
 import TaskEntryForm from "./TaskEntryForm";
 
+function formatDelay(delaySeconds: number) {
+  if (delaySeconds > 0 && delaySeconds % 60 === 0) {
+    return `${delaySeconds / 60}분`;
+  }
+  return `${delaySeconds}초`;
+}
+
 export default function TaskList({
   tasks,
   onRemove,
@@ -109,7 +116,7 @@ export default function TaskList({
                       {task.title || task.value}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: "#A79C7F" }}>
-                      {task.type === "browser" ? "웹사이트" : "프로그램"} · 대기 {task.delay}초
+                      {task.type === "browser" ? "웹사이트" : "프로그램"} · 대기 {formatDelay(task.delay)}
                     </p>
                   </div>
                 </div>
