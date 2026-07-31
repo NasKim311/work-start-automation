@@ -57,12 +57,20 @@ Current channels: `load-config`, `save-config`, `run-tasks`, `select-file`, `get
 `set-auto-start`, `is-autostart`.
 
 **Task model** (`react-app/src/types.ts`): `{ type: "browser" | "program", title?, value, delay }`.
-- `type: "browser"` runs `start chrome "<value>"`; `type: "program"` runs `value` directly
-  (supports both raw `.exe` paths and `code "<folder>"` for VS Code).
+- `type: "browser"` runs `chrome "<value>"` via `execFile("cmd.exe", ["/c", "start", "chrome", ...])`;
+  `type: "program"` runs `value` directly (supports both raw `.exe` paths and `code "<folder>"`
+  for VS Code).
+- In `run-tasks` (`electron/main.js`), execution deliberately splits between `execFile` and
+  `exec`: browser URLs and plain `.exe` paths go through `execFile` (no shell, so special
+  characters/spaces in the value can't cause shell injection); only `code "<folder>"` values go
+  through `exec` (shell-invoked), because that's a genuine shell command string, not just a
+  path. Keep this split when touching that code — don't switch everything to `exec` for
+  convenience.
 - `delay` is in seconds and is **cumulative across the task list**, not per-task: in
   `run-tasks`, `main.js` accumulates `totalDelay += task.delay` and schedules each task's
-  `exec` with `setTimeout(..., totalDelay * 1000)`, so a list's total wait time is the sum of
-  all delays up to that point, not just its own.
+  execution with `setTimeout(..., totalDelay * 1000)`, so a list's total wait time is the sum
+  of all delays up to that point, not just its own. Re-running cancels any still-pending
+  timeouts from the previous run (`pendingTimeouts`), so a stale run can't overlap a new one.
 
 **Config persistence** — saved as JSON at `app.getPath("userData")/config.json` (per-OS-user
 Electron data dir), *not* a repo-relative file. A root-level `config.json` was previously
@@ -84,3 +92,14 @@ form markup — extend that shared component rather than forking it.
 
 - UI copy, code comments, and console/log/error messages are in Korean throughout the
   codebase — match this when touching existing strings or adding new user-facing text/comments.
+- The UI follows the "모닝 노트" (Morning Note) design system — navy hero banner, cream
+  dotted-note cards, handwritten wordmark, coral stamp buttons — specified in `DESIGN.md`.
+  Check it before making any UI/styling change so new work matches the existing colors,
+  typography, and component patterns rather than introducing one-off styles.
+
+## Reference docs
+
+- [`README.md`](README.md) — product overview, features, and run instructions (Korean)
+- [`PRODUCT.md`](PRODUCT.md) — product definition: users, purpose, positioning, constraints
+- [`DESIGN.md`](DESIGN.md) — design system spec (colors, typography, component rules)
+- [`TODO.md`](TODO.md) — known limitations and prioritized feature/UX candidates
