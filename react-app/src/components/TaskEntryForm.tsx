@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FolderOpen } from "lucide-react";
 import type { Task, TaskType } from "../types";
+import { secondsToDisplay, displayToSeconds, type DelayUnit } from "../utils";
 
 interface TaskEntryFormProps {
   initialValues?: Task;
@@ -22,18 +23,18 @@ export default function TaskEntryForm({
   );
   // delay는 항상 초 단위로 저장한다 — 분 단위는 입력 편의를 위한 표시 방식일 뿐,
   // 기존에 저장된 설정 및 main.js의 누적 딜레이 계산과 호환되도록 유지한다.
-  const [delayUnit, setDelayUnit] = useState<"sec" | "min">(
+  const [delayUnit, setDelayUnit] = useState<DelayUnit>(
     task.delay > 0 && task.delay % 60 === 0 ? "min" : "sec"
   );
 
-  const delayDisplayValue = delayUnit === "min" ? task.delay / 60 : task.delay;
+  const delayDisplayValue = secondsToDisplay(task.delay, delayUnit);
 
   const handleDelayChange = (raw: string) => {
     const num = Number(raw);
     if (Number.isNaN(num)) return;
     setTask((prev) => ({
       ...prev,
-      delay: delayUnit === "min" ? Math.round(num * 60) : num,
+      delay: displayToSeconds(num, delayUnit),
     }));
   };
 

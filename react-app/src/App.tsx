@@ -3,6 +3,7 @@ import { Play, Square, Plus, Check, X, Download, Upload } from "lucide-react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import type { Task, Profile, ElectronAPI } from "./types";
+import { reorderTasks } from "./utils";
 
 declare global {
   interface Window {
@@ -418,12 +419,7 @@ function App() {
                 );
               }}
               onMove={(from, to) => {
-                updateActiveTasks((prev) => {
-                  const copy = [...prev];
-                  const [moved] = copy.splice(from, 1);
-                  copy.splice(to, 0, moved);
-                  return copy;
-                });
+                updateActiveTasks((prev) => reorderTasks(prev, from, to));
               }}
             />
           )}

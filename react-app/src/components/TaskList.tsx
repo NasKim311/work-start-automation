@@ -2,13 +2,7 @@ import { useState } from "react";
 import type { Task } from "../types";
 import { ArrowUp, ArrowDown, Trash2, Pencil, Check, Globe, Monitor, Play, GripVertical } from "lucide-react";
 import TaskEntryForm from "./TaskEntryForm";
-
-function formatDelay(delaySeconds: number) {
-  if (delaySeconds > 0 && delaySeconds % 60 === 0) {
-    return `${delaySeconds / 60}분`;
-  }
-  return `${delaySeconds}초`;
-}
+import { formatDelay } from "../utils";
 
 export default function TaskList({
   tasks,
