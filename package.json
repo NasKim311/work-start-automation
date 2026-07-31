@@ -29,6 +29,7 @@
       "output": "release"
     },
     "win": {
+      "icon": "build/icon.png",
       "target": [
         "nsis",
         "portable"
