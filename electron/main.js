@@ -203,3 +203,40 @@ ipcMain.handle("select-file", async () => {
   if (result.canceled) return null;
   return result.filePaths[0];
 });
+
+// EXPORT CONFIG (다른 PC로 옮기기 위해 파일로 저장)
+ipcMain.handle("export-config", async (event, config) => {
+  const result = await dialog.showSaveDialog(BrowserWindow.fromWebContents(event.sender), {
+    title: "설정 내보내기",
+    defaultPath: "deskready-config.json",
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+
+  if (result.canceled || !result.filePath) return false;
+  fs.writeFileSync(result.filePath, JSON.stringify(config, null, 2));
+  return true;
+});
+
+// IMPORT CONFIG (내보내기 파일 또는 옛 { tasks: [...] } 형식 모두 지원)
+ipcMain.handle("import-config", async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender), {
+    title: "설정 가져오기",
+    filters: [{ name: "JSON", extensions: ["json"] }],
+    properties: ["openFile"],
+  });
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(result.filePaths[0]));
+    if (Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+      return parsed;
+    }
+    if (Array.isArray(parsed.tasks)) {
+      return makeDefaultConfig(parsed.tasks);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+});

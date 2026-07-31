@@ -58,8 +58,12 @@ immediately, ignoring its delay — for testing a URL/path without waiting throu
 list's cumulative delay; shares the `runSingleTask` execution logic with `run-tasks`),
 `stop-tasks` (cancels `pendingTimeouts` via the same `clearPendingTasks` helper `run-tasks`
 uses at its own start — only cancels not-yet-fired scheduled tasks; a task whose `exec`/`execFile`
-has already been kicked off keeps running, this can't kill it), `select-file`,
-`get-auto-start`, `set-auto-start`, `is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
+has already been kicked off keeps running, this can't kill it), `select-file`, `export-config`
+(writes the whole `AppConfig` to a JSON file via `dialog.showSaveDialog`, for moving routine
+sets to another PC), `import-config` (reads a JSON file via `dialog.showOpenDialog`; accepts
+either the current `AppConfig` shape or the old `{ tasks: [...] }` shape via the same
+`makeDefaultConfig` migration `load-config` uses), `get-auto-start`, `set-auto-start`,
+`is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
 — renderer reports its current tasks + dirty flag so `main.js` can warn before a window close
 discards unsaved changes; see `win.on("close", ...)` in `createWindow`), `task-execution-error`
 (one-way, main → renderer via `sender.send(...)`/`ipcRenderer.on(...)` — `run-tasks` reports

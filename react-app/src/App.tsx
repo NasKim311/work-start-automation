@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Play, Square, Plus, Check, X } from "lucide-react";
+import { Play, Square, Plus, Check, X, Download, Upload } from "lucide-react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import type { Task, Profile, ElectronAPI } from "./types";
@@ -163,6 +163,37 @@ function App() {
     setIsRenamingProfile(false);
   };
 
+  const handleExport = async () => {
+    try {
+      const ok = await window.electronAPI.exportConfig({
+        profiles,
+        activeProfileId,
+        autoStartProfileId,
+      });
+      if (ok) alert("설정을 내보냈습니다.");
+    } catch (error) {
+      console.error("설정 내보내기 실패:", error);
+      alert("설정을 내보낼 수 없습니다.");
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      const imported = await window.electronAPI.importConfig();
+      if (!imported) return;
+      if (!window.confirm("가져온 설정으로 지금 열려있는 모든 루틴 세트를 덮어쓸까요?")) {
+        return;
+      }
+      setProfiles(imported.profiles);
+      setActiveProfileId(imported.activeProfileId);
+      setAutoStartProfileId(imported.autoStartProfileId);
+      setHasUnsavedChanges(true);
+    } catch (error) {
+      console.error("설정 가져오기 실패:", error);
+      alert("설정을 가져올 수 없습니다.");
+    }
+  };
+
   const deleteActiveProfile = () => {
     if (!activeProfile || profiles.length <= 1) return;
     if (
@@ -198,7 +229,17 @@ function App() {
       <div className="max-w-4xl mx-auto px-6 -mt-14 relative z-20 space-y-6">
         {/* Profile Switcher */}
         <div className="mn-card p-4 sm:p-6">
-          <span className="mn-label mb-3">루틴 세트</span>
+          <div className="flex items-center justify-between mb-3">
+            <span className="mn-label">루틴 세트</span>
+            <div className="flex items-center gap-1">
+              <button onClick={handleImport} className="mn-icon-btn p-2" title="설정 가져오기">
+                <Upload className="w-4 h-4" />
+              </button>
+              <button onClick={handleExport} className="mn-icon-btn p-2" title="설정 내보내기">
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
           {isRenamingProfile ? (
             <div className="flex items-center gap-2">
               <input

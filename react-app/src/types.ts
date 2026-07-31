@@ -26,6 +26,8 @@ export interface ElectronAPI {
   saveConfig: (config: AppConfig) => Promise<void>;
   loadConfig: () => Promise<AppConfig>;
   selectFile: () => Promise<string | null>;
+  exportConfig: (config: AppConfig) => Promise<boolean>;
+  importConfig: () => Promise<AppConfig | null>;
   getAutoStart: () => Promise<boolean>;
   setAutoStart: (val: boolean) => Promise<void>;
   isAutoStart: () => Promise<boolean>;
