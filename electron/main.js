@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
-const { exec } = require("child_process");
+const { exec, execFile } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -44,14 +44,21 @@ ipcMain.handle("run-tasks", async (_, tasks) => {
     setTimeout(() => {
       try {
         if (task.type === "browser") {
-          // 크롬 실행
-          exec(`start chrome "${task.value}"`);
+          // execFile로 실행해 URL에 특수문자가 있어도 셸 인젝션 없이 안전하게 처리
+          execFile("cmd.exe", ["/c", "start", "chrome", task.value], (e) => {
+            if (e) console.error("크롬 실행 오류:", e);
+          });
         } else if (task.type === "program") {
-          // VSCode 폴더 열기 지원
           if (task.value.startsWith("code ")) {
-            exec(task.value); // ex: code "C:\project"
+            // 사용자가 직접 입력한 셸 커맨드라 셸 실행이 불가피함 (ex: code "C:\project")
+            exec(task.value, (e) => {
+              if (e) console.error("프로그램 실행 오류:", e);
+            });
           } else {
-            exec(`"${task.value}"`); // 일반 exe 실행
+            // execFile로 실행해 경로에 공백/특수문자가 있어도 안전하게 처리
+            execFile(task.value, [], (e) => {
+              if (e) console.error("프로그램 실행 오류:", e);
+            });
           }
         }
       } catch (e) {
