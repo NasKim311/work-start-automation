@@ -39,8 +39,14 @@ function App() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await window.electronAPI.saveConfig(tasks);
-    setTimeout(() => setIsSaving(false), 500);
+    try {
+      await window.electronAPI.saveConfig(tasks);
+      setTimeout(() => setIsSaving(false), 500);
+    } catch (error) {
+      console.error("설정 저장 실패:", error);
+      alert("설정을 저장할 수 없습니다. 다시 시도해 주세요.");
+      setIsSaving(false);
+    }
   };
 
   const toggleAutoStart = async () => {
