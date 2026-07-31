@@ -90,6 +90,15 @@ Electron data dir), *not* a repo-relative file. A root-level `config.json` was p
 committed by mistake and is being removed/gitignored — don't reintroduce a repo-root config
 file as a data store.
 
+The config holds multiple named routine sets ("프로필"): `{ profiles: [{ id, name, tasks }],
+activeProfileId, autoStartProfileId }` (`react-app/src/types.ts`'s `AppConfig`/`Profile`).
+`activeProfileId` is whichever profile the UI currently has open/editing; `autoStartProfileId`
+is the profile `--autostart` runs, and the two are intentionally independent — switching which
+profile you're viewing does not change what runs at login. `load-config` in `main.js`
+auto-migrates the old single-list `{ tasks: [...] }` shape into a one-profile `AppConfig` (named
+"기본") the first time it's read, and immediately persists the migrated shape so this only
+happens once.
+
 **Auto-start on Windows login** — `set-auto-start` uses
 `app.setLoginItemSettings({ openAtLogin, path: app.getPath("exe"), args: ["--autostart"] })`.
 On launch, the renderer checks `is-autostart` (which just checks `process.argv` for

@@ -1,13 +1,14 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const { exec, execFile } = require("child_process");
+const { randomUUID } = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
 let isDirty = false;
-let latestTasks = [];
+let latestConfig = null;
 
-ipcMain.on("notify-dirty-state", (_, { tasks, dirty }) => {
-  latestTasks = tasks;
+ipcMain.on("notify-dirty-state", (_, { config, dirty }) => {
+  latestConfig = config;
   isDirty = dirty;
 });
 
@@ -43,7 +44,7 @@ function createWindow() {
     });
 
     if (choice === 0) {
-      saveConfigToDisk(latestTasks);
+      if (latestConfig) saveConfigToDisk(latestConfig);
       isDirty = false;
       win.destroy();
     } else if (choice === 1) {
@@ -63,24 +64,41 @@ app.on("window-all-closed", () => {
 
 const configPath = path.join(app.getPath("userData"), "config.json");
 
-function saveConfigToDisk(tasks) {
-  fs.writeFileSync(configPath, JSON.stringify({ tasks }, null, 2));
+function saveConfigToDisk(config) {
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-// CONFIG LOAD
+function makeDefaultConfig(tasks = []) {
+  const id = randomUUID();
+  return {
+    profiles: [{ id, name: "기본", tasks }],
+    activeProfileId: id,
+    autoStartProfileId: id,
+  };
+}
+
+// CONFIG LOAD — 여러 루틴 세트(profiles)를 지원하기 전 옛 { tasks: [...] } 형식이면
+// "기본" 프로필 하나로 자동 이관하고, 이관된 형식을 곧바로 디스크에 반영한다.
 ipcMain.handle("load-config", async () => {
+  let parsed;
   try {
-    const data = fs.readFileSync(configPath);
-    const parsed = JSON.parse(data);
-    return Array.isArray(parsed.tasks) ? parsed.tasks : [];
+    parsed = JSON.parse(fs.readFileSync(configPath));
   } catch {
-    return [];
+    return makeDefaultConfig();
   }
+
+  if (Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+    return parsed;
+  }
+
+  const migrated = makeDefaultConfig(Array.isArray(parsed.tasks) ? parsed.tasks : []);
+  saveConfigToDisk(migrated);
+  return migrated;
 });
 
 // CONFIG SAVE
-ipcMain.handle("save-config", async (_, tasks) => {
-  saveConfigToDisk(tasks);
+ipcMain.handle("save-config", async (_, config) => {
+  saveConfigToDisk(config);
 });
 
 // RUN TASKS

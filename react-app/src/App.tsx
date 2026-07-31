@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Play, Square } from "lucide-react";
+import { Play, Square, Plus, Check, X } from "lucide-react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
-import type { Task, ElectronAPI } from "./types";
+import type { Task, Profile, ElectronAPI } from "./types";
 
 declare global {
   interface Window {
@@ -12,22 +12,40 @@ declare global {
 
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState("");
+  const [autoStartProfileId, setAutoStartProfileId] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [autoStartEnabled, setAutoStartEnabled] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [runningTaskTitle, setRunningTaskTitle] = useState<string | null>(null);
+  const [newProfileDraft, setNewProfileDraft] = useState<string | null>(null);
+  const [isRenamingProfile, setIsRenamingProfile] = useState(false);
+  const [renameDraft, setRenameDraft] = useState("");
 
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+  const tasks = activeProfile?.tasks ?? [];
   const totalDelaySeconds = tasks.reduce((sum, t) => sum + (t.delay || 0), 0);
 
+  const updateActiveTasks = (updater: (tasks: Task[]) => Task[]) => {
+    setProfiles((prev) =>
+      prev.map((p) => (p.id === activeProfileId ? { ...p, tasks: updater(p.tasks) } : p))
+    );
+    setHasUnsavedChanges(true);
+  };
+
   useEffect(() => {
+    if (!activeProfileId) return; // 초기 로드 전에는 알릴 상태가 없음
     try {
-      window.electronAPI.notifyDirtyState(tasks, hasUnsavedChanges);
+      window.electronAPI.notifyDirtyState(
+        { profiles, activeProfileId, autoStartProfileId },
+        hasUnsavedChanges
+      );
     } catch (error) {
       console.error("변경사항 상태 전달 실패:", error);
     }
-  }, [tasks, hasUnsavedChanges]);
+  }, [profiles, activeProfileId, autoStartProfileId, hasUnsavedChanges]);
 
   useEffect(() => {
     const unsubscribe = window.electronAPI.onTaskError(({ task, message }) => {
@@ -53,13 +71,20 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        const loadedTasks = await window.electronAPI.loadConfig();
-        setTasks(loadedTasks);
+        const config = await window.electronAPI.loadConfig();
+        setProfiles(config.profiles);
+        setActiveProfileId(config.activeProfileId);
+        setAutoStartProfileId(config.autoStartProfileId);
 
-        // 윈도우 시작 시 자동 실행된 경우 즉시 작업 시작
+        // 윈도우 시작 시 자동 실행된 경우, 자동실행용으로 지정된 세트를 즉시 시작
         const isAuto = await window.electronAPI.isAutoStart();
-        if (isAuto && loadedTasks.length > 0) {
-          window.electronAPI.runTasks(loadedTasks);
+        if (isAuto) {
+          const autoStartProfile = config.profiles.find(
+            (p) => p.id === config.autoStartProfileId
+          );
+          if (autoStartProfile && autoStartProfile.tasks.length > 0) {
+            window.electronAPI.runTasks(autoStartProfile.tasks);
+          }
         }
 
         const autoStartStatus = await window.electronAPI.getAutoStart();
@@ -74,7 +99,7 @@ function App() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await window.electronAPI.saveConfig(tasks);
+      await window.electronAPI.saveConfig({ profiles, activeProfileId, autoStartProfileId });
       setHasUnsavedChanges(false);
       setTimeout(() => setIsSaving(false), 500);
     } catch (error) {
@@ -106,6 +131,56 @@ function App() {
     }
   };
 
+  // Electron BrowserWindow는 window.prompt()를 지원하지 않아(호출 시 예외 발생)
+  // 세트 추가/이름 변경 모두 인라인 입력창으로 처리한다.
+  const confirmAddProfile = () => {
+    const name = newProfileDraft?.trim();
+    if (!name) {
+      setNewProfileDraft(null);
+      return;
+    }
+    const id = crypto.randomUUID();
+    setProfiles((prev) => [...prev, { id, name, tasks: [] }]);
+    setActiveProfileId(id);
+    setHasUnsavedChanges(true);
+    setNewProfileDraft(null);
+  };
+
+  const startRenameProfile = () => {
+    if (!activeProfile) return;
+    setRenameDraft(activeProfile.name);
+    setIsRenamingProfile(true);
+  };
+
+  const confirmRenameProfile = () => {
+    const name = renameDraft.trim();
+    if (name) {
+      setProfiles((prev) =>
+        prev.map((p) => (p.id === activeProfileId ? { ...p, name } : p))
+      );
+      setHasUnsavedChanges(true);
+    }
+    setIsRenamingProfile(false);
+  };
+
+  const deleteActiveProfile = () => {
+    if (!activeProfile || profiles.length <= 1) return;
+    if (
+      !window.confirm(
+        `"${activeProfile.name}" 세트를 삭제할까요? 안에 담긴 작업 ${activeProfile.tasks.length}개도 함께 삭제됩니다.`
+      )
+    ) {
+      return;
+    }
+    const remaining = profiles.filter((p) => p.id !== activeProfileId);
+    setProfiles(remaining);
+    setActiveProfileId(remaining[0].id);
+    if (autoStartProfileId === activeProfileId) {
+      setAutoStartProfileId(remaining[0].id);
+    }
+    setHasUnsavedChanges(true);
+  };
+
   return (
     <div className="min-h-screen font-sans pb-16">
       {/* Hero Header Area (Morning Note) */}
@@ -121,6 +196,92 @@ function App() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 -mt-14 relative z-20 space-y-6">
+        {/* Profile Switcher */}
+        <div className="mn-card p-4 sm:p-6">
+          <span className="mn-label mb-3">루틴 세트</span>
+          {isRenamingProfile ? (
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                value={renameDraft}
+                onChange={(e) => setRenameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") confirmRenameProfile();
+                  if (e.key === "Escape") setIsRenamingProfile(false);
+                }}
+                className="mn-underline-input"
+                placeholder="세트 이름"
+              />
+              <button onClick={confirmRenameProfile} className="mn-icon-btn p-2" title="확인">
+                <Check className="w-4 h-4" />
+              </button>
+              <button onClick={() => setIsRenamingProfile(false)} className="mn-icon-btn p-2" title="취소">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              {profiles.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setActiveProfileId(p.id)}
+                  className={`mn-type-tab ${p.id === activeProfileId ? "active" : ""}`}
+                  title={p.id === autoStartProfileId ? "윈도우 시작 시 자동 실행되는 세트" : undefined}
+                >
+                  {p.id === autoStartProfileId ? "⭐ " : ""}
+                  {p.name}
+                </button>
+              ))}
+              {newProfileDraft !== null ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    autoFocus
+                    value={newProfileDraft}
+                    onChange={(e) => setNewProfileDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") confirmAddProfile();
+                      if (e.key === "Escape") setNewProfileDraft(null);
+                    }}
+                    className="mn-underline-input"
+                    placeholder="세트 이름 (ex: 재택용)"
+                    style={{ width: 140 }}
+                  />
+                  <button onClick={confirmAddProfile} className="mn-icon-btn p-2" title="추가">
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setNewProfileDraft(null)} className="mn-icon-btn p-2" title="취소">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setNewProfileDraft("")} className="mn-icon-btn p-2" title="새 세트 추가">
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
+          {activeProfile && !isRenamingProfile && (
+            <div className="flex flex-wrap items-center gap-4 mt-3 text-xs font-bold" style={{ color: "#A79C7F" }}>
+              <button onClick={startRenameProfile} className="underline">이름 변경</button>
+              <button
+                onClick={() => {
+                  setAutoStartProfileId(activeProfileId);
+                  setHasUnsavedChanges(true);
+                }}
+                disabled={activeProfileId === autoStartProfileId}
+                className="underline disabled:opacity-40"
+              >
+                {activeProfileId === autoStartProfileId ? "자동실행 세트예요" : "자동실행 세트로 지정"}
+              </button>
+              {profiles.length > 1 && (
+                <button onClick={deleteActiveProfile} className="underline" style={{ color: "#C9634A" }}>
+                  이 세트 삭제
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Action Bar */}
         <div className="mn-card p-6 sm:p-8">
           <span className="mn-label mb-4">오늘의 설정</span>
@@ -179,8 +340,7 @@ function App() {
           <span className="mn-label mb-5">새로운 작업 추가</span>
           <TaskForm
             onAdd={(task) => {
-              setTasks((prev) => [...prev, task]);
-              setHasUnsavedChanges(true);
+              updateActiveTasks((prev) => [...prev, task]);
             }}
           />
         </div>
@@ -201,20 +361,19 @@ function App() {
             <TaskList
               tasks={tasks}
               onRemove={(i) => {
-                setTasks((prev) => prev.filter((_, idx) => idx !== i));
-                setHasUnsavedChanges(true);
+                updateActiveTasks((prev) => prev.filter((_, idx) => idx !== i));
               }}
               onUpdate={(i, updatedTask) => {
-                setTasks((prev) =>
+                updateActiveTasks((prev) =>
                   prev.map((t, idx) => (idx === i ? updatedTask : t))
                 );
-                setHasUnsavedChanges(true);
               }}
               onMove={(from, to) => {
-                const copy = [...tasks];
-                [copy[from], copy[to]] = [copy[to], copy[from]];
-                setTasks(copy);
-                setHasUnsavedChanges(true);
+                updateActiveTasks((prev) => {
+                  const copy = [...prev];
+                  [copy[from], copy[to]] = [copy[to], copy[from]];
+                  return copy;
+                });
               }}
             />
           )}

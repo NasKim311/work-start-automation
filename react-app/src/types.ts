@@ -7,17 +7,29 @@ export type Task = {
   delay: number;
 };
 
+export type Profile = {
+  id: string;
+  name: string;
+  tasks: Task[];
+};
+
+export type AppConfig = {
+  profiles: Profile[];
+  activeProfileId: string;
+  autoStartProfileId: string;
+};
+
 export interface ElectronAPI {
   runTasks: (tasks: Task[]) => Promise<void>;
   runSingleTask: (task: Task) => Promise<void>;
   stopTasks: () => Promise<void>;
-  saveConfig: (tasks: Task[]) => Promise<void>;
-  loadConfig: () => Promise<Task[]>;
+  saveConfig: (config: AppConfig) => Promise<void>;
+  loadConfig: () => Promise<AppConfig>;
   selectFile: () => Promise<string | null>;
   getAutoStart: () => Promise<boolean>;
   setAutoStart: (val: boolean) => Promise<void>;
   isAutoStart: () => Promise<boolean>;
-  notifyDirtyState: (tasks: Task[], dirty: boolean) => void;
+  notifyDirtyState: (config: AppConfig, dirty: boolean) => void;
   onTaskError: (
     callback: (data: { task: Task; message: string }) => void
   ) => () => void;
