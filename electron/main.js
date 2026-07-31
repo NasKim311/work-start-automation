@@ -17,6 +17,11 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
+// 창을 모두 닫으면 앱도 함께 종료 (없으면 백그라운드에 프로세스가 남음)
+app.on("window-all-closed", () => {
+  app.quit();
+});
+
 const configPath = path.join(app.getPath("userData"), "config.json");
 
 // CONFIG LOAD
