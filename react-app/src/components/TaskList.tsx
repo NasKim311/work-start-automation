@@ -81,7 +81,7 @@ export default function TaskList({
                   <div className="flex items-center gap-1 bg-gray-50 rounded-full p-1.5 border border-gray-100 shadow-inner">
                     <button
                       onClick={() => onMove(i, i - 1)}
-                      disabled={i === 0}
+                      disabled={i === 0 || editingIndex !== null}
                       className="p-2 text-gray-400 hover:text-[#0082B2] hover:bg-white rounded-full disabled:opacity-30 transition-all shadow-sm disabled:shadow-none hover:scale-105 active:scale-95"
                       title="위로 올리기"
                     >
@@ -89,7 +89,7 @@ export default function TaskList({
                     </button>
                     <button
                       onClick={() => onMove(i, i + 1)}
-                      disabled={i === tasks.length - 1}
+                      disabled={i === tasks.length - 1 || editingIndex !== null}
                       className="p-2 text-gray-400 hover:text-[#0082B2] hover:bg-white rounded-full disabled:opacity-30 transition-all shadow-sm disabled:shadow-none hover:scale-105 active:scale-95"
                       title="아래로 내리기"
                     >
@@ -107,7 +107,8 @@ export default function TaskList({
                     </button>
                     <button
                       onClick={() => onRemove(i)}
-                      className="p-3 text-gray-400 hover:text-white hover:bg-[#E54D26] rounded-full transition-all border border-gray-200 hover:border-transparent active:scale-90 hover:shadow-lg"
+                      disabled={editingIndex !== null}
+                      className="p-3 text-gray-400 hover:text-white hover:bg-[#E54D26] rounded-full transition-all border border-gray-200 hover:border-transparent active:scale-90 hover:shadow-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 disabled:cursor-not-allowed"
                       title="삭제하기"
                     >
                       <Trash2 className="w-5 h-5" />
