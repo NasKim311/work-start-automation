@@ -102,7 +102,11 @@ export default function TaskList({
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => onRemove(i)}
+                    onClick={() => {
+                      if (window.confirm(`"${task.title || task.value}" 항목을 삭제할까요?`)) {
+                        onRemove(i);
+                      }
+                    }}
                     disabled={editingIndex !== null}
                     className="mn-icon-btn p-2"
                     title="삭제하기"
