@@ -10,4 +10,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   isAutoStart: () => ipcRenderer.invoke("is-autostart"),
   notifyDirtyState: (tasks, dirty) =>
     ipcRenderer.send("notify-dirty-state", { tasks, dirty }),
+  onTaskError: (callback) => {
+    const listener = (_, data) => callback(data);
+    ipcRenderer.on("task-execution-error", listener);
+    return () => ipcRenderer.removeListener("task-execution-error", listener);
+  },
 });

@@ -26,6 +26,13 @@ function App() {
   }, [tasks, hasUnsavedChanges]);
 
   useEffect(() => {
+    const unsubscribe = window.electronAPI.onTaskError(({ task, message }) => {
+      alert(`"${task.title || task.value}" 실행에 실패했습니다.\n${message}`);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     const init = async () => {
       try {
         const loadedTasks = await window.electronAPI.loadConfig();
