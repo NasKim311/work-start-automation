@@ -42,9 +42,12 @@ via `loadFile`, so `react-app` must be built (`npm run build` at the repo root, 
 
 `electron-builder` is configured via the root `package.json`'s `"build"` field (`appId`,
 `productName: "DeskReady"`, Windows `nsis` + `portable` targets, output to `release/`).
-`npm run dist` builds the renderer then runs `electron-builder`. No app icon is configured yet
-(electron-builder falls back to its default Electron icon) — add one under `build.win.icon` if
-branding matters later. `electron` and `electron-builder` are `devDependencies` (not
+`npm run dist` builds the renderer then runs `electron-builder`. The app icon
+(`build.win.icon` → `build/icon.png`, source vector at `build/icon-source.svg`) is a custom
+"모닝 노트"-palette mug-and-checkmark mark matching the in-app hero wordmark
+(`react-app/src/App.tsx`'s hero `<svg>`) — regenerate `icon.png` from the source SVG (e.g. via
+a headless-browser screenshot) if the design changes; electron-builder converts the PNG to
+`.ico` at build time. `electron` and `electron-builder` are `devDependencies` (not
 `dependencies`) deliberately — electron-builder replaces the Electron npm package with the
 platform binary at packaging time, so having it under `dependencies` risks bundling the ~300MB
 npm package into the app.
