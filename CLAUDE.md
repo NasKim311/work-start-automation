@@ -11,8 +11,8 @@ login.
 
 ## Running it
 
-There is no combined dev script — the Electron shell always points at the Vite dev server,
-so both must run together in separate terminals:
+There is no combined dev script — in dev (`app.isPackaged === false`), the Electron shell
+always points at the Vite dev server, so both must run together in separate terminals:
 
 ```bash
 # terminal 1 — Vite dev server (must be on :5173, hardcoded in electron/main.js)
@@ -30,9 +30,11 @@ Other react-app commands: `npm run build` (tsc -b && vite build), `npm run lint`
 
 There is no test suite configured in either package.
 
-Note: `electron/main.js` calls `win.loadURL("http://localhost:5173")` unconditionally — there
-is no production `loadFile`/built-dist branch, so `npm run build` output is not currently wired
-up to the Electron shell.
+Note: `electron/main.js`'s `createWindow` branches on `app.isPackaged` — unpackaged (dev) loads
+`http://localhost:5173` from the Vite dev server; packaged loads
+`react-app/dist/index.html` via `loadFile`, so `npm run build` must be run before packaging.
+There is no `electron-builder`/packaging config in `package.json` yet, so packaging itself
+isn't wired up — only the dev-vs-packaged load branch exists so far.
 
 ## Architecture
 
