@@ -86,6 +86,11 @@ ipcMain.handle("save-config", async (_, tasks) => {
 // RUN TASKS
 let pendingTimeouts = [];
 
+function clearPendingTasks() {
+  pendingTimeouts.forEach(clearTimeout);
+  pendingTimeouts = [];
+}
+
 function runSingleTask(task, sender) {
   const reportError = (error) => {
     console.error("실행 오류:", error);
@@ -120,8 +125,7 @@ function runSingleTask(task, sender) {
 
 ipcMain.handle("run-tasks", async (event, tasks) => {
   // 이전 실행에서 예약된 작업이 남아있다면 취소하여 중복 실행 방지
-  pendingTimeouts.forEach(clearTimeout);
-  pendingTimeouts = [];
+  clearPendingTasks();
 
   const sender = event.sender;
   let totalDelay = 0;
@@ -146,6 +150,11 @@ ipcMain.handle("run-tasks", async (event, tasks) => {
 // RUN SINGLE TASK (딜레이 무시하고 즉시 실행 — 목록 전체를 안 돌리고 개별 확인용)
 ipcMain.handle("run-single-task", async (event, task) => {
   runSingleTask(task, event.sender);
+});
+
+// STOP TASKS (아직 실행되지 않은 예약분만 취소 — 이미 시작된 프로세스는 중단하지 않음)
+ipcMain.handle("stop-tasks", async () => {
+  clearPendingTasks();
 });
 
 // GET AUTO START STATUS

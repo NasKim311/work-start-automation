@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, Square } from "lucide-react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import type { Task, ElectronAPI } from "./types";
@@ -84,6 +84,17 @@ function App() {
     }
   };
 
+  const handleStop = async () => {
+    try {
+      await window.electronAPI.stopTasks();
+    } catch (error) {
+      console.error("실행 중지 실패:", error);
+    } finally {
+      setIsRunning(false);
+      setRunningTaskTitle(null);
+    }
+  };
+
   const toggleAutoStart = async () => {
     try {
       const newValue = !autoStartEnabled;
@@ -144,6 +155,16 @@ function App() {
                     : "실행 준비 중..."
                   : "출근 시작하기"}
               </button>
+              {isRunning && (
+                <button
+                  onClick={handleStop}
+                  className="mn-stamp-secondary px-4 py-2.5 flex items-center gap-2"
+                  title="남은 작업 취소"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  중지
+                </button>
+              )}
             </div>
           </div>
           {tasks.length > 0 && (

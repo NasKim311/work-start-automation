@@ -55,7 +55,10 @@ capability requires changes in three places kept in sync by hand:
 
 Current channels: `load-config`, `save-config`, `run-tasks`, `run-single-task` (runs one task
 immediately, ignoring its delay — for testing a URL/path without waiting through the whole
-list's cumulative delay; shares the `runSingleTask` execution logic with `run-tasks`), `select-file`,
+list's cumulative delay; shares the `runSingleTask` execution logic with `run-tasks`),
+`stop-tasks` (cancels `pendingTimeouts` via the same `clearPendingTasks` helper `run-tasks`
+uses at its own start — only cancels not-yet-fired scheduled tasks; a task whose `exec`/`execFile`
+has already been kicked off keeps running, this can't kill it), `select-file`,
 `get-auto-start`, `set-auto-start`, `is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
 — renderer reports its current tasks + dirty flag so `main.js` can warn before a window close
 discards unsaved changes; see `win.on("close", ...)` in `createWindow`), `task-execution-error`
