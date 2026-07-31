@@ -6,13 +6,15 @@
   "scripts": {
     "start": "electron .",
     "build": "cd react-app && npm run build",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "test:e2e": "playwright test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "electron": "^41.0.2",
     "electron-builder": "^26.0.12"
   },
