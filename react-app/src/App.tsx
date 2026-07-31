@@ -83,6 +83,14 @@ function App() {
             (p) => p.id === config.autoStartProfileId
           );
           if (autoStartProfile && autoStartProfile.tasks.length > 0) {
+            // 부팅 시 조용히 실행돼서 사용자가 인지 못 하는 문제 방지 — OS 알림으로 시작을 알림
+            try {
+              new Notification("DeskReady", {
+                body: `"${autoStartProfile.name}" 세트를 자동으로 시작합니다 (${autoStartProfile.tasks.length}개 작업).`,
+              });
+            } catch (error) {
+              console.error("자동 실행 알림 표시 실패:", error);
+            }
             window.electronAPI.runTasks(autoStartProfile.tasks);
           }
         }
