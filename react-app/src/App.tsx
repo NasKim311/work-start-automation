@@ -226,8 +226,9 @@ function App() {
       {/* Hero Header Area (Morning Note) */}
       <div className="mn-hero pt-16 pb-24 px-6 flex flex-col items-center text-center">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FBF6EC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mb-3">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M8 12.5l2.5 2.5L16 9.5" />
+          <path d="M6 11 L17 11 L16 19 Q16 20 15 20 L8 20 Q7 20 7 19 Z" />
+          <path d="M17 12.3 Q20 12.3 20 15 Q20 17.7 17 17.7" />
+          <path d="M14 8.2 L15.5 9.7 L19 5.7" stroke="#C9634A" />
         </svg>
         <h1 className="mn-title text-6xl mb-2 leading-none">DeskReady</h1>
         <p className="max-w-lg mx-auto leading-relaxed font-semibold" style={{ color: "#C9BFA0" }}>
