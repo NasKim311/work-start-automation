@@ -9,6 +9,7 @@ export type Task = {
 
 export interface ElectronAPI {
   runTasks: (tasks: Task[]) => Promise<void>;
+  runSingleTask: (task: Task) => Promise<void>;
   saveConfig: (tasks: Task[]) => Promise<void>;
   loadConfig: () => Promise<Task[]>;
   selectFile: () => Promise<string | null>;

@@ -86,51 +86,60 @@ ipcMain.handle("save-config", async (_, tasks) => {
 // RUN TASKS
 let pendingTimeouts = [];
 
-ipcMain.handle("run-tasks", async (event, tasks) => {
-  // 이전 실행에서 예약된 작업이 남아있다면 취소하여 중복 실행 방지
-  pendingTimeouts.forEach(clearTimeout);
-  pendingTimeouts = [];
-
-  const sender = event.sender;
-  const reportError = (task, error) => {
+function runSingleTask(task, sender) {
+  const reportError = (error) => {
     console.error("실행 오류:", error);
     if (!sender.isDestroyed()) {
       sender.send("task-execution-error", { task, message: error.message });
     }
   };
 
+  try {
+    if (task.type === "browser") {
+      // execFile로 실행해 URL에 특수문자가 있어도 셸 인젝션 없이 안전하게 처리
+      execFile("cmd.exe", ["/c", "start", "chrome", task.value], (e) => {
+        if (e) reportError(e);
+      });
+    } else if (task.type === "program") {
+      if (task.value.startsWith("code ")) {
+        // 사용자가 직접 입력한 셸 커맨드라 셸 실행이 불가피함 (ex: code "C:\project")
+        exec(task.value, (e) => {
+          if (e) reportError(e);
+        });
+      } else {
+        // execFile로 실행해 경로에 공백/특수문자가 있어도 안전하게 처리
+        execFile(task.value, [], (e) => {
+          if (e) reportError(e);
+        });
+      }
+    }
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+ipcMain.handle("run-tasks", async (event, tasks) => {
+  // 이전 실행에서 예약된 작업이 남아있다면 취소하여 중복 실행 방지
+  pendingTimeouts.forEach(clearTimeout);
+  pendingTimeouts = [];
+
+  const sender = event.sender;
   let totalDelay = 0;
 
   for (const task of tasks) {
     totalDelay += task.delay || 0;
 
     const timeoutId = setTimeout(() => {
-      try {
-        if (task.type === "browser") {
-          // execFile로 실행해 URL에 특수문자가 있어도 셸 인젝션 없이 안전하게 처리
-          execFile("cmd.exe", ["/c", "start", "chrome", task.value], (e) => {
-            if (e) reportError(task, e);
-          });
-        } else if (task.type === "program") {
-          if (task.value.startsWith("code ")) {
-            // 사용자가 직접 입력한 셸 커맨드라 셸 실행이 불가피함 (ex: code "C:\project")
-            exec(task.value, (e) => {
-              if (e) reportError(task, e);
-            });
-          } else {
-            // execFile로 실행해 경로에 공백/특수문자가 있어도 안전하게 처리
-            execFile(task.value, [], (e) => {
-              if (e) reportError(task, e);
-            });
-          }
-        }
-      } catch (e) {
-        reportError(task, e);
-      }
+      runSingleTask(task, sender);
     }, totalDelay * 1000); // 👉 초 단위 적용
 
     pendingTimeouts.push(timeoutId);
   }
+});
+
+// RUN SINGLE TASK (딜레이 무시하고 즉시 실행 — 목록 전체를 안 돌리고 개별 확인용)
+ipcMain.handle("run-single-task", async (event, task) => {
+  runSingleTask(task, event.sender);
 });
 
 // GET AUTO START STATUS

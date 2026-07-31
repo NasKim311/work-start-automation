@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Task } from "../types";
-import { ArrowUp, ArrowDown, Trash2, Pencil, Check, Globe, Monitor } from "lucide-react";
+import { ArrowUp, ArrowDown, Trash2, Pencil, Check, Globe, Monitor, Play } from "lucide-react";
 import TaskEntryForm from "./TaskEntryForm";
 
 export default function TaskList({
@@ -22,6 +22,12 @@ export default function TaskList({
 
   const cancelEditing = () => {
     setEditingIndex(null);
+  };
+
+  const testRun = (task: Task) => {
+    window.electronAPI.runSingleTask(task).catch((error) => {
+      console.error("개별 실행 오류:", error);
+    });
   };
 
   return (
@@ -93,6 +99,14 @@ export default function TaskList({
                     title="아래로 내리기"
                   >
                     <ArrowDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => testRun(task)}
+                    disabled={editingIndex !== null}
+                    className="mn-icon-btn p-2"
+                    title="테스트 실행"
+                  >
+                    <Play className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => startEditing(i)}

@@ -53,8 +53,10 @@ capability requires changes in three places kept in sync by hand:
 2. the matching bridge method in `electron/preload.js`
 3. the `ElectronAPI` interface in `react-app/src/types.ts`
 
-Current channels: `load-config`, `save-config`, `run-tasks`, `select-file`, `get-auto-start`,
-`set-auto-start`, `is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
+Current channels: `load-config`, `save-config`, `run-tasks`, `run-single-task` (runs one task
+immediately, ignoring its delay — for testing a URL/path without waiting through the whole
+list's cumulative delay; shares the `runSingleTask` execution logic with `run-tasks`), `select-file`,
+`get-auto-start`, `set-auto-start`, `is-autostart`, `notify-dirty-state` (one-way, `ipcRenderer.send`/`ipcMain.on`
 — renderer reports its current tasks + dirty flag so `main.js` can warn before a window close
 discards unsaved changes; see `win.on("close", ...)` in `createWindow`), `task-execution-error`
 (one-way, main → renderer via `sender.send(...)`/`ipcRenderer.on(...)` — `run-tasks` reports
