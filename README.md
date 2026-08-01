@@ -101,3 +101,6 @@ TODO.md에 정리했던 개선 후보 11개는 모두 반영되었고, 패키징
 - [`PRODUCT.md`](PRODUCT.md) — 제품 정의 (사용자, 목적, 포지셔닝)
 - [`DESIGN.md`](DESIGN.md) — 디자인 시스템 명세
 - [`TODO.md`](TODO.md) — 기능/UX 개선 후보 목록
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — 아키텍처/핵심 로직 설명 문서
+- [`PRESENTATION.md`](PRESENTATION.md) — 위 내용을 발표용으로 압축한 슬라이드 아웃라인
+- [아키텍처 발표 슬라이드](https://claude.ai/code/artifact/9c14f1e2-2e44-4eef-8bff-6f2471962eac) — 위 아웃라인을 실제 슬라이드로 만든 페이지 (비공개 — 공유하려면 발행자가 공유 설정 필요)
