@@ -192,3 +192,6 @@ form markup — extend that shared component rather than forking it.
 - [`PRODUCT.md`](PRODUCT.md) — product definition: users, purpose, positioning, constraints
 - [`DESIGN.md`](DESIGN.md) — design system spec (colors, typography, component rules)
 - [`TODO.md`](TODO.md) — known limitations and prioritized feature/UX candidates
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — narrative walkthrough of the architecture and core
+  logic (process split, IPC boundary, cumulative-delay execution model, auto-start mechanism,
+  data model, testing strategy) for explaining the codebase to others (Korean)
