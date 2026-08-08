@@ -68,6 +68,44 @@ function saveConfigToDisk(config) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
+// 가져오기(import-config)로 들어오는 외부 JSON은 신뢰할 수 없으므로, 실행 가능한
+// task로 취급하기 전에 형태를 엄격히 검증한다 — 특히 value는 exec()로 셸에
+// 넘어갈 수 있는 값이라 문자열 타입 확인만으로 인젝션 자체를 막지는 못하지만,
+// 최소한 형태가 어긋난(구조가 깨진) 데이터가 그대로 실행 경로까지 흘러가는 것은 막는다.
+function isValidTask(t) {
+  return (
+    t &&
+    typeof t === "object" &&
+    (t.type === "browser" || t.type === "program") &&
+    typeof t.value === "string" &&
+    typeof t.delay === "number" &&
+    (t.title === undefined || typeof t.title === "string")
+  );
+}
+
+function isValidProfile(p) {
+  return (
+    p &&
+    typeof p === "object" &&
+    typeof p.id === "string" &&
+    typeof p.name === "string" &&
+    Array.isArray(p.tasks) &&
+    p.tasks.every(isValidTask)
+  );
+}
+
+function isValidAppConfig(c) {
+  return (
+    c &&
+    typeof c === "object" &&
+    Array.isArray(c.profiles) &&
+    c.profiles.length > 0 &&
+    c.profiles.every(isValidProfile) &&
+    typeof c.activeProfileId === "string" &&
+    typeof c.autoStartProfileId === "string"
+  );
+}
+
 function makeDefaultConfig(tasks = []) {
   const id = randomUUID();
   return {
@@ -79,11 +117,24 @@ function makeDefaultConfig(tasks = []) {
 
 // CONFIG LOAD — 여러 루틴 세트(profiles)를 지원하기 전 옛 { tasks: [...] } 형식이면
 // "기본" 프로필 하나로 자동 이관하고, 이관된 형식을 곧바로 디스크에 반영한다.
-ipcMain.handle("load-config", async () => {
+ipcMain.handle("load-config", async (event) => {
+  let raw;
+  try {
+    raw = fs.readFileSync(configPath);
+  } catch {
+    // 파일이 아직 없음 — 첫 실행이라 정상 상황, 경고 없이 기본값 반환
+    return makeDefaultConfig();
+  }
+
   let parsed;
   try {
-    parsed = JSON.parse(fs.readFileSync(configPath));
+    parsed = JSON.parse(raw);
   } catch {
+    // 파일은 있는데 JSON 파싱에 실패 = 손상된 설정 파일. 원본은 그대로 두고
+    // (덮어쓰지 않음) 렌더러에 알려서 사용자가 "루틴이 사라졌다"고 오해하지 않게 한다.
+    if (!event.sender.isDestroyed()) {
+      event.sender.send("config-load-warning", { path: configPath });
+    }
     return makeDefaultConfig();
   }
 
@@ -228,7 +279,23 @@ ipcMain.handle("export-config", async (event, config) => {
 
 // IMPORT CONFIG (내보내기 파일 또는 옛 { tasks: [...] } 형식 모두 지원)
 ipcMain.handle("import-config", async (event) => {
-  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender), {
+  const win = BrowserWindow.fromWebContents(event.sender);
+
+  // 가져온 설정의 프로그램 실행 항목은 확인 절차 없이 그대로 실행될 수 있으므로,
+  // 파일을 고르기 전에 출처를 신뢰하는지 먼저 확인한다.
+  const trustChoice = dialog.showMessageBoxSync(win, {
+    type: "warning",
+    buttons: ["계속", "취소"],
+    defaultId: 1,
+    cancelId: 1,
+    noLink: true,
+    message: "신뢰할 수 있는 파일만 가져오세요",
+    detail:
+      "가져온 설정에 포함된 프로그램 실행 항목은 별도 확인 없이 자동으로 실행될 수 있습니다. 출처를 모르는 파일은 가져오지 마세요.",
+  });
+  if (trustChoice !== 0) return null;
+
+  const result = await dialog.showOpenDialog(win, {
     title: "설정 가져오기",
     filters: [{ name: "JSON", extensions: ["json"] }],
     properties: ["openFile"],
@@ -238,10 +305,10 @@ ipcMain.handle("import-config", async (event) => {
 
   try {
     const parsed = JSON.parse(fs.readFileSync(result.filePaths[0]));
-    if (Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+    if (isValidAppConfig(parsed)) {
       return parsed;
     }
-    if (Array.isArray(parsed.tasks)) {
+    if (Array.isArray(parsed.tasks) && parsed.tasks.every(isValidTask)) {
       return makeDefaultConfig(parsed.tasks);
     }
     return null;

@@ -29,4 +29,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("run-tasks-finished", listener);
     return () => ipcRenderer.removeListener("run-tasks-finished", listener);
   },
+  onConfigLoadWarning: (callback) => {
+    const listener = (_, data) => callback(data);
+    ipcRenderer.on("config-load-warning", listener);
+    return () => ipcRenderer.removeListener("config-load-warning", listener);
+  },
 });

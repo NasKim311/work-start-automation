@@ -39,4 +39,5 @@ export interface ElectronAPI {
     callback: (data: { task: Task; index: number; total: number }) => void
   ) => () => void;
   onRunFinished: (callback: () => void) => () => void;
+  onConfigLoadWarning: (callback: (data: { path: string }) => void) => () => void;
 }

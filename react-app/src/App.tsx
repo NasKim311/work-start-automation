@@ -56,6 +56,15 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = window.electronAPI.onConfigLoadWarning(() => {
+      alert(
+        "저장된 설정 파일을 읽지 못했습니다. 파일이 손상되어 기본 설정으로 표시합니다.\n기존 설정 파일은 그대로 남아있으니 필요하면 직접 확인해보세요."
+      );
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     const unsubscribeStarted = window.electronAPI.onTaskStarted(({ task }) => {
       setRunningTaskTitle(task.title || task.value);
     });

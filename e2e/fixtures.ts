@@ -17,7 +17,7 @@ export function makeConfig(tasks: unknown[]) {
 
 type Fixtures = {
   userDataDir: string;
-  initialConfig: object | undefined;
+  initialConfig: object | string | undefined;
   electronApp: ElectronApplication;
   page: Page;
 };
@@ -35,10 +35,12 @@ export const test = base.extend<Fixtures>({
 
   electronApp: async ({ userDataDir, initialConfig }, use) => {
     if (initialConfig) {
-      fs.writeFileSync(
-        path.join(userDataDir, "config.json"),
-        JSON.stringify(initialConfig, null, 2)
-      );
+      // 손상된 config.json 시나리오 테스트용으로 문자열을 그대로 쓰는 것도 허용
+      const content =
+        typeof initialConfig === "string"
+          ? initialConfig
+          : JSON.stringify(initialConfig, null, 2);
+      fs.writeFileSync(path.join(userDataDir, "config.json"), content);
     }
 
     const app = await electron.launch({
