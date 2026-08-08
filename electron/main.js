@@ -55,7 +55,37 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // CSP는 패키징된 빌드에만 건다 — 개발 모드는 Vite dev server(HMR용
+  // eval/websocket)를 그대로 쓰므로 여기서 제한하면 개발 환경이 깨진다.
+  // 배포되는 실제 사용자용 빌드는 전부 로컬 번들 파일만 로드하므로 외부
+  // 출처를 허용할 이유가 없다.
+  if (app.isPackaged) {
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": [
+            [
+              "default-src 'self'",
+              "script-src 'self'",
+              // index.css가 Pretendard(jsdelivr)/Caveat(Google Fonts) 웹폰트 스타일시트를
+              // @import로 불러오므로 그 출처를 명시적으로 허용해야 함
+              "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+              "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
+              "img-src 'self' data:",
+              "connect-src 'self'",
+              "object-src 'none'",
+              "base-uri 'none'",
+            ].join("; "),
+          ],
+        },
+      });
+    });
+  }
+
+  createWindow();
+});
 
 // 창을 모두 닫으면 앱도 함께 종료 (없으면 백그라운드에 프로세스가 남음)
 app.on("window-all-closed", () => {

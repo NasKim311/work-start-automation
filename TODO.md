@@ -94,9 +94,15 @@ DeskReady 기능/UX 개선 후보 목록 (2026-07-31 정리, 2026-08-01 갱신, 
    설치/업데이트 시 Windows SmartScreen 경고가 뜨고 새 버전마다 GitHub
    Release를 태그/게시해야 하는 운영 부담이 있어 이번엔 보류하기로 함. 필요해
    지면 다시 논의.
-5. **CSP 미설정** — `react-app/index.html`에 Content-Security-Policy가 없음.
-   지금은 전부 로컬 번들 콘텐츠만 로드해 실질 위험은 낮지만, Electron 보안
-   체크리스트상 표준 권장 항목.
+5. ✅ **CSP 미설정** — `react-app/index.html`에 Content-Security-Policy가
+   없던 문제.
+   → 정적 `<meta>` 태그 대신, 패키징된 빌드(`app.isPackaged`)에서만
+   `session.defaultSession.webRequest.onHeadersReceived`로 CSP 헤더를 주입.
+   개발 모드는 Vite dev server(HMR eval/websocket)를 그대로 써야 해서 제외.
+   `index.css`가 Pretendard(jsdelivr)/Caveat(Google Fonts) 웹폰트를 외부
+   CDN에서 불러오므로 해당 출처를 `style-src`/`font-src`에 명시적으로 허용.
+   실제 file:// 로드 + CSP 조합으로 렌더링이 깨지지 않고 CSP 위반도 없는지
+   직접 검증함.
 6. **자동실행 프로필이 요일/조건 구분 없이 1개 고정** — "출근용"/"재택용"
    프로필은 만들 수 있지만 자동실행 대상(`autoStartProfileId`)은 하나뿐이라,
    재택 요일엔 매번 수동으로 프로필을 바꿔야 함.
