@@ -33,7 +33,10 @@ function App() {
 
   const activeProfile = profiles.find((p) => p.id === activeProfileId);
   const tasks = activeProfile?.tasks ?? [];
-  const totalDelaySeconds = tasks.reduce((sum, t) => sum + (t.delay || 0), 0);
+  // 자동실행에서 제외된(enabled === false) 작업은 실제로 실행되지 않으므로
+  // 소요시간/실행 가능 여부 판단에서도 제외한다 (main.js의 run-tasks와 동일 기준)
+  const runnableTasks = tasks.filter((t) => t.enabled !== false);
+  const totalDelaySeconds = runnableTasks.reduce((sum, t) => sum + (t.delay || 0), 0);
 
   const updateActiveTasks = (updater: (tasks: Task[]) => Task[]) => {
     setProfiles((prev) =>
@@ -413,7 +416,7 @@ function App() {
                   setRunningTaskTitle(null);
                   window.electronAPI.runTasks(tasks);
                 }}
-                disabled={isRunning || tasks.length === 0}
+                disabled={isRunning || runnableTasks.length === 0}
                 className="mn-stamp-primary px-7 py-2.5 flex items-center gap-2"
               >
                 <Play className="w-4 h-4 fill-current" />
@@ -435,7 +438,7 @@ function App() {
               )}
             </div>
           </div>
-          {tasks.length > 0 && (
+          {runnableTasks.length > 0 && (
             <p className="text-xs font-bold text-right mt-2" style={{ color: "#A79C7F" }}>
               총 예상 소요시간 {totalDelaySeconds}초
             </p>

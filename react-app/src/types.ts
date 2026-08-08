@@ -5,6 +5,9 @@ export type Task = {
   title?: string;
   value: string;
   delay: number;
+  // 출근 시작하기/자동실행 시 이 작업을 건너뛸지 여부. 미지정(undefined)은
+  // 켜진 것으로 취급 — 이 필드 도입 전 저장된 작업과의 하위 호환을 위함.
+  enabled?: boolean;
 };
 
 export type Profile = {

@@ -123,7 +123,8 @@ function isValidTask(t) {
     (t.type === "browser" || t.type === "program") &&
     typeof t.value === "string" &&
     typeof t.delay === "number" &&
-    (t.title === undefined || typeof t.title === "string")
+    (t.title === undefined || typeof t.title === "string") &&
+    (t.enabled === undefined || typeof t.enabled === "boolean")
   );
 }
 
@@ -323,17 +324,29 @@ ipcMain.handle("run-tasks", async (event, tasks) => {
   clearPendingTasks();
 
   const sender = event.sender;
+  // enabled === false로 꺼진 작업은 누적 딜레이 계산에서도, 실행에서도 완전히 제외
+  const runnableTasks = tasks.filter((task) => task.enabled !== false);
+
+  if (runnableTasks.length === 0) {
+    // 스케줄할 작업이 하나도 없으면 이벤트가 전혀 안 뜨는데, 렌더러의 "실행 중"
+    // 상태는 run-tasks-finished로만 풀리므로 여기서 즉시 보내줘야 버튼이 멈추지 않는다
+    if (!sender.isDestroyed()) {
+      sender.send("run-tasks-finished");
+    }
+    return;
+  }
+
   let totalDelay = 0;
 
-  tasks.forEach((task, index) => {
+  runnableTasks.forEach((task, index) => {
     totalDelay += task.delay || 0;
 
     const timeoutId = setTimeout(() => {
       if (!sender.isDestroyed()) {
-        sender.send("task-started", { task, index, total: tasks.length });
+        sender.send("task-started", { task, index, total: runnableTasks.length });
       }
       runSingleTask(task, sender);
-      if (index === tasks.length - 1 && !sender.isDestroyed()) {
+      if (index === runnableTasks.length - 1 && !sender.isDestroyed()) {
         sender.send("run-tasks-finished");
       }
     }, totalDelay * 1000); // 👉 초 단위 적용

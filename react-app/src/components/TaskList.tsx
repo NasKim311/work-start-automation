@@ -37,6 +37,8 @@ export default function TaskList({
     <div>
       {tasks.map((task, i) => {
         const isEditing = editingIndex === i;
+        // enabled가 없던(구버전) 작업은 켜진 것으로 취급 — 마이그레이션 없이도 기존 동작 유지
+        const isEnabled = task.enabled !== false;
 
         return (
           <div
@@ -71,7 +73,7 @@ export default function TaskList({
                     background: "#FFF9EF",
                   }
                 : {
-                    opacity: draggedIndex === i ? 0.4 : 1,
+                    opacity: draggedIndex === i ? 0.4 : isEnabled ? 1 : 0.5,
                     borderTop: dragOverIndex === i && draggedIndex !== i ? "2px solid #C9634A" : undefined,
                   }
             }
@@ -111,11 +113,20 @@ export default function TaskList({
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: "#A79C7F" }}>
                       {task.type === "browser" ? "웹사이트" : "프로그램"} · 대기 {formatDelay(task.delay)}
+                      {!isEnabled && " · 자동실행 제외됨"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 sm:shrink-0 justify-end mt-2 sm:mt-0">
+                <div className="flex items-center gap-2 sm:shrink-0 justify-end mt-2 sm:mt-0">
+                  <button
+                    onClick={() => onUpdate(i, { ...task, enabled: !isEnabled })}
+                    disabled={editingIndex !== null}
+                    className={`mn-toggle-track ${isEnabled ? "on" : ""}`}
+                    title={isEnabled ? "출근 시작 시 이 작업 포함 (클릭하면 제외)" : "출근 시작 시 이 작업 제외됨 (클릭하면 포함)"}
+                  >
+                    <span className="mn-toggle-dot" style={{ left: isEnabled ? 22 : 3 }} />
+                  </button>
                   <button
                     onClick={() => onMove(i, i - 1)}
                     disabled={i === 0 || editingIndex !== null}
