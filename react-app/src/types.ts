@@ -13,10 +13,14 @@ export type Profile = {
   tasks: Task[];
 };
 
+// 요일별 자동실행 프로필. 0=일요일 ~ 6=토요일(JS Date.getDay()과 동일한 인덱스).
+// 값이 profileId면 그 세트를 자동 실행, null이면 그 요일엔 자동 실행 안 함.
+export type AutoStartByDay = Record<number, string | null>;
+
 export type AppConfig = {
   profiles: Profile[];
   activeProfileId: string;
-  autoStartProfileId: string;
+  autoStartByDay: AutoStartByDay;
 };
 
 export interface ElectronAPI {

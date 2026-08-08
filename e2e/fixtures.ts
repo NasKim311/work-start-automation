@@ -11,7 +11,7 @@ export function makeConfig(tasks: unknown[]) {
   return {
     profiles: [{ id, name: "기본", tasks }],
     activeProfileId: id,
-    autoStartProfileId: id,
+    autoStartByDay: { 0: id, 1: id, 2: id, 3: id, 4: id, 5: id, 6: id },
   };
 }
 

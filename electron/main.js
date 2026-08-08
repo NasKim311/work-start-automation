@@ -138,6 +138,36 @@ function isValidProfile(p) {
   );
 }
 
+// 요일별 자동실행 프로필. 0=일 ~ 6=토(JS Date.getDay()과 동일 인덱스), 값은
+// profileId 또는 "그 요일엔 자동 실행 안 함"을 뜻하는 null.
+function isValidAutoStartByDay(v) {
+  if (!v || typeof v !== "object") return false;
+  for (let day = 0; day <= 6; day++) {
+    const val = v[day];
+    if (val !== null && typeof val !== "string") return false;
+  }
+  return true;
+}
+
+function makeAutoStartByDay(profileId) {
+  return { 0: profileId, 1: profileId, 2: profileId, 3: profileId, 4: profileId, 5: profileId, 6: profileId };
+}
+
+// profiles는 유효하지만 autoStartByDay가 없거나 형태가 잘못된 설정(요일별 지정
+// 기능 도입 전의 옛 버전, 또는 그 옛 버전에서 내보낸 파일)을 보정한다. 그보다도
+// 더 옛날 단일 필드(autoStartProfileId)가 있으면 그 프로필로 7일을 채우고,
+// 그것도 없으면 첫 프로필로 채운다.
+function normalizeAutoStartByDay(parsed) {
+  if (isValidAutoStartByDay(parsed.autoStartByDay)) {
+    return parsed.autoStartByDay;
+  }
+  const fallbackId =
+    typeof parsed.autoStartProfileId === "string"
+      ? parsed.autoStartProfileId
+      : parsed.profiles[0].id;
+  return makeAutoStartByDay(fallbackId);
+}
+
 function isValidAppConfig(c) {
   return (
     c &&
@@ -146,7 +176,7 @@ function isValidAppConfig(c) {
     c.profiles.length > 0 &&
     c.profiles.every(isValidProfile) &&
     typeof c.activeProfileId === "string" &&
-    typeof c.autoStartProfileId === "string"
+    isValidAutoStartByDay(c.autoStartByDay)
   );
 }
 
@@ -182,7 +212,7 @@ function makeDefaultConfig(tasks = []) {
   return {
     profiles: [{ id, name: "기본", tasks }],
     activeProfileId: id,
-    autoStartProfileId: id,
+    autoStartByDay: makeAutoStartByDay(id),
   };
 }
 
@@ -227,7 +257,15 @@ ipcMain.handle("load-config", async (event) => {
   }
 
   if (Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
-    return parsed;
+    if (isValidAutoStartByDay(parsed.autoStartByDay)) {
+      return parsed;
+    }
+    // 요일별 자동실행 지정 기능 도입 전 형식(단일 autoStartProfileId 또는 그마저
+    // 없는 형식) — autoStartByDay로 보정해 곧바로 디스크에 반영한다.
+    const migrated = { ...parsed, autoStartByDay: normalizeAutoStartByDay(parsed) };
+    delete migrated.autoStartProfileId;
+    saveConfigToDisk(migrated);
+    return migrated;
   }
 
   const migrated = makeDefaultConfig(Array.isArray(parsed.tasks) ? parsed.tasks : []);
@@ -395,6 +433,22 @@ ipcMain.handle("import-config", async (event) => {
     const parsed = JSON.parse(fs.readFileSync(result.filePaths[0]));
     if (isValidAppConfig(parsed)) {
       return parsed;
+    }
+    // profiles는 유효한데 요일별 자동실행 지정 기능 도입 전 형식으로 내보낸
+    // 파일이면 autoStartByDay를 보정해서 받아들인다.
+    if (
+      Array.isArray(parsed.profiles) &&
+      parsed.profiles.length > 0 &&
+      parsed.profiles.every(isValidProfile)
+    ) {
+      return {
+        profiles: parsed.profiles,
+        activeProfileId:
+          typeof parsed.activeProfileId === "string"
+            ? parsed.activeProfileId
+            : parsed.profiles[0].id,
+        autoStartByDay: normalizeAutoStartByDay(parsed),
+      };
     }
     if (Array.isArray(parsed.tasks) && parsed.tasks.every(isValidTask)) {
       return makeDefaultConfig(parsed.tasks);

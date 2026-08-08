@@ -31,17 +31,25 @@ test("새 세트를 추가하면 비어있고, 다른 세트 작업에는 영향
   await expect(page.locator(".mn-row")).toHaveCount(2);
 });
 
-test("자동실행 세트로 지정하면 별표가 붙는다", async ({ page }) => {
+test("요일별로 다른 세트를 자동실행으로 지정할 수 있다", async ({ page }) => {
   const switcher = page.locator(".mn-card").first();
+  const weekdayCard = page.locator(".mn-card", { hasText: "요일별 자동실행 설정" });
 
   await switcher.locator('button[title="새 세트 추가"]').click();
   await switcher.locator('input[placeholder*="세트 이름"]').fill("재택용");
   await switcher.locator('button[title="추가"]').click();
   await page.waitForTimeout(200);
 
-  await page.getByText("자동실행 세트로 지정").click();
-  await page.waitForTimeout(200);
+  // 화면 표시 순서(월~일) 상 첫 번째 select가 월요일, 두 번째가 화요일
+  const mondaySelect = weekdayCard.locator("select").nth(0);
+  const tuesdaySelect = weekdayCard.locator("select").nth(1);
 
-  await expect(switcher.locator(".mn-type-tab", { hasText: "⭐" })).toHaveCount(1);
-  await expect(switcher.locator(".mn-type-tab", { hasText: "⭐ 재택용" })).toBeVisible();
+  // makeConfig가 기본 세트("e2e-default-profile")로 7일을 전부 채워서 시작한다
+  await expect(mondaySelect).toHaveValue("e2e-default-profile");
+  await expect(tuesdaySelect).toHaveValue("e2e-default-profile");
+
+  await mondaySelect.selectOption({ label: "재택용" });
+
+  await expect(mondaySelect).not.toHaveValue("e2e-default-profile");
+  await expect(tuesdaySelect).toHaveValue("e2e-default-profile");
 });

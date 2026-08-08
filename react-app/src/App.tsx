@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Play, Square, Plus, Check, X, Download, Upload } from "lucide-react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
-import type { Task, Profile, ElectronAPI } from "./types";
+import type { Task, Profile, ElectronAPI, AutoStartByDay } from "./types";
 import { reorderTasks } from "./utils";
 
 declare global {
@@ -11,11 +11,17 @@ declare global {
   }
 }
 
+// 요일 표시 순서(월~일)와 라벨. 값(키)은 JS Date.getDay()와 동일한 인덱스
+// (0=일 ~ 6=토)라서, 실제 자동실행 시점엔 new Date().getDay()로 바로 조회한다.
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const WEEKDAY_LABELS: Record<number, string> = {
+  0: "일", 1: "월", 2: "화", 3: "수", 4: "목", 5: "금", 6: "토",
+};
 
 function App() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState("");
-  const [autoStartProfileId, setAutoStartProfileId] = useState("");
+  const [autoStartByDay, setAutoStartByDay] = useState<AutoStartByDay>({});
   const [isSaving, setIsSaving] = useState(false);
   const [autoStartEnabled, setAutoStartEnabled] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -40,13 +46,13 @@ function App() {
     if (!activeProfileId) return; // 초기 로드 전에는 알릴 상태가 없음
     try {
       window.electronAPI.notifyDirtyState(
-        { profiles, activeProfileId, autoStartProfileId },
+        { profiles, activeProfileId, autoStartByDay },
         hasUnsavedChanges
       );
     } catch (error) {
       console.error("변경사항 상태 전달 실패:", error);
     }
-  }, [profiles, activeProfileId, autoStartProfileId, hasUnsavedChanges]);
+  }, [profiles, activeProfileId, autoStartByDay, hasUnsavedChanges]);
 
   useEffect(() => {
     const unsubscribe = window.electronAPI.onTaskError(({ task, message }) => {
@@ -93,14 +99,15 @@ function App() {
         const config = await window.electronAPI.loadConfig();
         setProfiles(config.profiles);
         setActiveProfileId(config.activeProfileId);
-        setAutoStartProfileId(config.autoStartProfileId);
+        setAutoStartByDay(config.autoStartByDay);
 
-        // 윈도우 시작 시 자동 실행된 경우, 자동실행용으로 지정된 세트를 즉시 시작
+        // 윈도우 시작 시 자동 실행된 경우, 오늘 요일에 지정된 세트를 즉시 시작
         const isAuto = await window.electronAPI.isAutoStart();
         if (isAuto) {
-          const autoStartProfile = config.profiles.find(
-            (p) => p.id === config.autoStartProfileId
-          );
+          const todaysProfileId = config.autoStartByDay[new Date().getDay()];
+          const autoStartProfile = todaysProfileId
+            ? config.profiles.find((p) => p.id === todaysProfileId)
+            : undefined;
           if (autoStartProfile && autoStartProfile.tasks.length > 0) {
             // 부팅 시 조용히 실행돼서 사용자가 인지 못 하는 문제 방지 — OS 알림으로 시작을 알림
             try {
@@ -126,7 +133,7 @@ function App() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await window.electronAPI.saveConfig({ profiles, activeProfileId, autoStartProfileId });
+      await window.electronAPI.saveConfig({ profiles, activeProfileId, autoStartByDay });
       setHasUnsavedChanges(false);
       setTimeout(() => setIsSaving(false), 500);
     } catch (error) {
@@ -195,7 +202,7 @@ function App() {
       const ok = await window.electronAPI.exportConfig({
         profiles,
         activeProfileId,
-        autoStartProfileId,
+        autoStartByDay,
       });
       if (ok) alert("설정을 내보냈습니다.");
     } catch (error) {
@@ -213,7 +220,7 @@ function App() {
       }
       setProfiles(imported.profiles);
       setActiveProfileId(imported.activeProfileId);
-      setAutoStartProfileId(imported.autoStartProfileId);
+      setAutoStartByDay(imported.autoStartByDay);
       setHasUnsavedChanges(true);
     } catch (error) {
       console.error("설정 가져오기 실패:", error);
@@ -233,9 +240,16 @@ function App() {
     const remaining = profiles.filter((p) => p.id !== activeProfileId);
     setProfiles(remaining);
     setActiveProfileId(remaining[0].id);
-    if (autoStartProfileId === activeProfileId) {
-      setAutoStartProfileId(remaining[0].id);
-    }
+    // 삭제된 세트가 요일별 자동실행에 지정돼 있었다면, 남은 첫 세트로 이관
+    setAutoStartByDay((prev) => {
+      const next = { ...prev };
+      for (const day of Object.keys(next)) {
+        if (next[Number(day)] === activeProfileId) {
+          next[Number(day)] = remaining[0].id;
+        }
+      }
+      return next;
+    });
     setHasUnsavedChanges(true);
   };
 
@@ -295,9 +309,7 @@ function App() {
                   key={p.id}
                   onClick={() => setActiveProfileId(p.id)}
                   className={`mn-type-tab ${p.id === activeProfileId ? "active" : ""}`}
-                  title={p.id === autoStartProfileId ? "윈도우 시작 시 자동 실행되는 세트" : undefined}
                 >
-                  {p.id === autoStartProfileId ? "⭐ " : ""}
                   {p.name}
                 </button>
               ))}
@@ -332,16 +344,6 @@ function App() {
           {activeProfile && !isRenamingProfile && (
             <div className="flex flex-wrap items-center gap-4 mt-3 text-xs font-bold" style={{ color: "#A79C7F" }}>
               <button onClick={startRenameProfile} className="underline">이름 변경</button>
-              <button
-                onClick={() => {
-                  setAutoStartProfileId(activeProfileId);
-                  setHasUnsavedChanges(true);
-                }}
-                disabled={activeProfileId === autoStartProfileId}
-                className="underline disabled:opacity-40"
-              >
-                {activeProfileId === autoStartProfileId ? "자동실행 세트예요" : "자동실행 세트로 지정"}
-              </button>
               {profiles.length > 1 && (
                 <button onClick={deleteActiveProfile} className="underline" style={{ color: "#C9634A" }}>
                   이 세트 삭제
@@ -349,6 +351,42 @@ function App() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Weekday Auto-start Assignment */}
+        <div className="mn-card p-4 sm:p-6">
+          <span className="mn-label">요일별 자동실행 설정</span>
+          <p className="text-xs mt-1 mb-4" style={{ color: "#A79C7F" }}>
+            윈도우 시작 시 자동 실행이 켜져 있으면, 그날 요일에 지정된 세트가 실행돼요.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+            {WEEKDAY_ORDER.map((day) => (
+              <div key={day} className="flex items-center gap-3">
+                <span
+                  className="text-sm font-bold w-4 text-center"
+                  style={{ color: "#5B5340" }}
+                >
+                  {WEEKDAY_LABELS[day]}
+                </span>
+                <select
+                  value={autoStartByDay[day] ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value || null;
+                    setAutoStartByDay((prev) => ({ ...prev, [day]: value }));
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="mn-underline-input"
+                >
+                  <option value="">안 함</option>
+                  {profiles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Action Bar */}
