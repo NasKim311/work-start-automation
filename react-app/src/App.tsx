@@ -56,10 +56,19 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = window.electronAPI.onConfigLoadWarning(() => {
-      alert(
-        "저장된 설정 파일을 읽지 못했습니다. 파일이 손상되어 기본 설정으로 표시합니다.\n기존 설정 파일은 그대로 남아있으니 필요하면 직접 확인해보세요."
-      );
+    const unsubscribe = window.electronAPI.onConfigLoadWarning(({ recovered, backupPath }) => {
+      if (recovered) {
+        alert(
+          "설정 파일이 손상되어 있었지만, 직전 백업본으로 자동 복구했습니다.\n지금 보이는 내용이 맞는지 확인해보세요."
+        );
+      } else {
+        alert(
+          "설정 파일이 손상되어 백업본으로도 복구하지 못해 기본 설정으로 시작합니다.\n" +
+            (backupPath
+              ? `손상된 원본은 다음 위치에 보존해두었습니다:\n${backupPath}`
+              : "손상된 원본을 별도로 보존하는 데도 실패했습니다.")
+        );
+      }
     });
     return unsubscribe;
   }, []);

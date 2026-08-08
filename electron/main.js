@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, session } = require("electron");
 const { exec, execFile } = require("child_process");
 const { randomUUID } = require("crypto");
 const fs = require("fs");
@@ -63,8 +63,22 @@ app.on("window-all-closed", () => {
 });
 
 const configPath = path.join(app.getPath("userData"), "config.json");
+const configBakPath = configPath + ".bak";
 
 function saveConfigToDisk(config) {
+  // 새 내용을 쓰기 전에 "직전까지 정상적으로 읽혔던" 상태를 .bak으로 남겨서,
+  // 다음 로드가 실패하더라도 자동 복구할 발판을 유지한다. 기존 config.json이
+  // 이미 손상돼 있으면(파싱 실패) 그 내용으로 기존 .bak을 덮어쓰지 않는다 —
+  // 손상된 데이터로 마지막 정상 백업을 지워버리는 걸 막기 위함.
+  try {
+    if (fs.existsSync(configPath)) {
+      const existing = fs.readFileSync(configPath);
+      JSON.parse(existing);
+      fs.copyFileSync(configPath, configBakPath);
+    }
+  } catch {
+    // 기존 파일이 없거나 이미 손상됨 — 백업 갱신을 건너뛰고 기존 .bak을 보존
+  }
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
@@ -106,6 +120,33 @@ function isValidAppConfig(c) {
   );
 }
 
+// config.json 파싱이 실패했을 때, 직전 저장 시점에 남긴 .bak으로 자동 복구를
+// 시도한다. .bak도 없거나 손상돼 있으면 null.
+function tryRecoverFromBackup() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(configBakPath));
+    return isValidAppConfig(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+// 자동 복구(.bak)도 불가능한 최후의 경우, 손상된 원본을 지우지 않고 타임스탬프
+// 붙은 별도 파일로 보존해 사용자가 나중에 직접 확인/복구할 수 있게 한다.
+function preserveCorruptedFile(raw) {
+  const backupPath = path.join(
+    path.dirname(configPath),
+    `config.corrupted-${Date.now()}.json`
+  );
+  try {
+    fs.writeFileSync(backupPath, raw);
+    return backupPath;
+  } catch (e) {
+    console.error("손상된 설정 파일 보존 실패:", e);
+    return null;
+  }
+}
+
 function makeDefaultConfig(tasks = []) {
   const id = randomUUID();
   return {
@@ -130,10 +171,27 @@ ipcMain.handle("load-config", async (event) => {
   try {
     parsed = JSON.parse(raw);
   } catch {
-    // 파일은 있는데 JSON 파싱에 실패 = 손상된 설정 파일. 원본은 그대로 두고
-    // (덮어쓰지 않음) 렌더러에 알려서 사용자가 "루틴이 사라졌다"고 오해하지 않게 한다.
+    // 파일은 있는데 JSON 파싱에 실패 = 손상된 설정 파일. 우선 직전 저장 시점의
+    // .bak으로 자동 복구를 시도하고, 성공하면 그 내용으로 config.json 자체를
+    // 즉시 재저장해 다음 실행부터는 정상적으로 읽히도록 자가 치유한다.
+    const recovered = tryRecoverFromBackup();
+    if (recovered) {
+      saveConfigToDisk(recovered);
+      if (!event.sender.isDestroyed()) {
+        event.sender.send("config-load-warning", { recovered: true, path: configPath });
+      }
+      return recovered;
+    }
+
+    // .bak도 없거나 손상됨 — 손상된 원본을 별도 파일로 보존해두고(덮어쓰지 않음)
+    // 렌더러에 알려서 사용자가 "루틴이 사라졌다"고 오해하지 않게 한다.
+    const backupPath = preserveCorruptedFile(raw);
     if (!event.sender.isDestroyed()) {
-      event.sender.send("config-load-warning", { path: configPath });
+      event.sender.send("config-load-warning", {
+        recovered: false,
+        path: configPath,
+        backupPath,
+      });
     }
     return makeDefaultConfig();
   }

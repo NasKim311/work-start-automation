@@ -18,6 +18,7 @@ export function makeConfig(tasks: unknown[]) {
 type Fixtures = {
   userDataDir: string;
   initialConfig: object | string | undefined;
+  initialConfigBak: object | string | undefined;
   electronApp: ElectronApplication;
   page: Page;
 };
@@ -25,6 +26,8 @@ type Fixtures = {
 export const test = base.extend<Fixtures>({
   // eslint-disable-next-line no-empty-pattern
   initialConfig: [undefined, { option: true }],
+  // eslint-disable-next-line no-empty-pattern
+  initialConfigBak: [undefined, { option: true }],
 
   // eslint-disable-next-line no-empty-pattern
   userDataDir: async ({}, use) => {
@@ -33,15 +36,16 @@ export const test = base.extend<Fixtures>({
     fs.rmSync(dir, { recursive: true, force: true });
   },
 
-  electronApp: async ({ userDataDir, initialConfig }, use) => {
-    if (initialConfig) {
-      // 손상된 config.json 시나리오 테스트용으로 문자열을 그대로 쓰는 것도 허용
-      const content =
-        typeof initialConfig === "string"
-          ? initialConfig
-          : JSON.stringify(initialConfig, null, 2);
-      fs.writeFileSync(path.join(userDataDir, "config.json"), content);
-    }
+  electronApp: async ({ userDataDir, initialConfig, initialConfigBak }, use) => {
+    const writeConfigFile = (filename: string, value: object | string) => {
+      const content = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+      fs.writeFileSync(path.join(userDataDir, filename), content);
+    };
+
+    // 손상된 config.json 시나리오 테스트용으로 문자열을 그대로 쓰는 것도 허용
+    if (initialConfig) writeConfigFile("config.json", initialConfig);
+    // config.json.bak 자동 복구 시나리오 테스트용
+    if (initialConfigBak) writeConfigFile("config.json.bak", initialConfigBak);
 
     const app = await electron.launch({
       args: [".", `--user-data-dir=${userDataDir}`],

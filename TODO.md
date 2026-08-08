@@ -77,17 +77,23 @@ DeskReady 기능/UX 개선 후보 목록 (2026-07-31 정리, 2026-08-01 갱신, 
 
 ### 안정성
 
-3. **config.json 손상 시 무경고 폴백** — `load-config`에서 JSON.parse가
-   실패하면 조용히 빈 기본 설정을 반환함(디스크에 덮어쓰지는 않아 원본은
-   남아있음). 사용자 입장에서는 루틴이 다 사라진 것처럼 보이고 왜 그런지 알
-   방법이 없음. → 파싱 실패 시 렌더러에 알림("설정 파일을 읽지 못했습니다")
-   추가.
+3. ✅ **config.json 손상 시 무경고 폴백** — `load-config`에서 JSON.parse가
+   실패하면 조용히 빈 기본 설정을 반환하던 문제.
+   → 저장할 때마다 직전 상태를 `config.json.bak`으로 남겨두고(기존 파일이 이미
+   손상돼 있으면 백업 갱신은 건너뜀), 로드 실패 시 `.bak`으로 자동 복구 후
+   복구된 내용으로 원본을 재저장(자가 치유)하고 가벼운 알림만 표시. `.bak`마저
+   없거나 손상됐을 때만 손상된 원본을 `config.corrupted-<timestamp>.json`으로
+   보존하고 그 경로를 알려주며 기본값으로 폴백. e2e 테스트(`e2e/corrupted-config.spec.ts`)
+   로 두 경로 모두 검증.
 
 ### 기능
 
-4. **자동 업데이트 없음** — `electron-builder`로 인스톨러만 만들고
-   `electron-updater` 연동이 없어, 새 버전이 나와도 재설치가 필요함. 배포
-   대상이 본인/소수라면 낮은 우선순위.
+4. **자동 업데이트 없음 (보류, 2026-08-08 결정)** — `electron-builder`로
+   인스톨러만 만들고 `electron-updater` 연동이 없어, 새 버전이 나와도
+   재설치가 필요함. GitHub Releases 연동으로 구현 가능하나, 코드 서명 없이는
+   설치/업데이트 시 Windows SmartScreen 경고가 뜨고 새 버전마다 GitHub
+   Release를 태그/게시해야 하는 운영 부담이 있어 이번엔 보류하기로 함. 필요해
+   지면 다시 논의.
 5. **CSP 미설정** — `react-app/index.html`에 Content-Security-Policy가 없음.
    지금은 전부 로컬 번들 콘텐츠만 로드해 실질 위험은 낮지만, Electron 보안
    체크리스트상 표준 권장 항목.
