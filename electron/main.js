@@ -287,6 +287,15 @@ function clearPendingTasks() {
   pendingTimeouts = [];
 }
 
+// cmd.exe는 공백 없는 인자는 따옴표로 감싸지 않고 그대로 넘겨받는데(Node가 공백이 있을
+// 때만 자동으로 따옴표를 씌움), 이 상태에서 & | < > ^ ( ) 를 명령어 구분자/특수문자로
+// 해석해버린다. URL 쿼리스트링에 흔한 `&`가 여기 걸리면 뒷부분이 별도 명령으로 취급되어
+// "'nav'은(는) 내부 또는 외부 명령... 아닙니다" 같은 오류가 난다. caret로 이스케이프해
+// cmd.exe가 문자 그대로 받아들이게 한다.
+function escapeCmdArg(value) {
+  return value.replace(/[()%!^"<>&|]/g, (c) => "^" + c);
+}
+
 function runSingleTask(task, sender) {
   const reportError = (error) => {
     console.error("실행 오류:", error);
@@ -298,7 +307,7 @@ function runSingleTask(task, sender) {
   try {
     if (task.type === "browser") {
       // execFile로 실행해 URL에 특수문자가 있어도 셸 인젝션 없이 안전하게 처리
-      execFile("cmd.exe", ["/c", "start", "chrome", task.value], (e) => {
+      execFile("cmd.exe", ["/c", "start", "chrome", escapeCmdArg(task.value)], (e) => {
         if (e) reportError(e);
       });
     } else if (task.type === "program") {
