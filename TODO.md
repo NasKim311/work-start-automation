@@ -62,18 +62,19 @@ DeskReady 기능/UX 개선 후보 목록 (2026-07-31 정리, 2026-08-01 갱신, 
 
 ### 보안
 
-1. **가져오기(import-config) 시 작업 값 검증이 없음** — `import-config`는 JSON
+1. ✅ **가져오기(import-config) 시 작업 값 검증이 없음** — `import-config`는 JSON
    스키마만 확인(`profiles` 배열 존재 여부)하고 각 task의 `value`는 그대로
    신뢰함. `type: "program"`이고 `value`가 `"code "`로 시작하면 `main.js`가
    `exec()`(셸 실행)로 그대로 돌리므로, 출처를 모르는 config.json을 가져와
    실행하면 임의 셸 명령이 실행될 수 있음. "다른 PC로 설정 이전"(export/import)
    기능이 있어 신뢰 못 하는 파일을 공유받는 시나리오에서 실제 공격 경로가 됨.
-   → 가져오기 시 최소 스키마 검증(허용된 `type`/필드 형태만 통과) 또는 가져오기
-   화면에 "신뢰하는 파일만 가져오세요" 경고 추가.
-2. **react-app 의존성에 high severity 취약점 2건** — `js-yaml`(CVE-2026-59870,
-   쿼드러틱 CPU 소비), `nanoid`(size 0일 때 무한 루프). 둘 다 `npm audit fix`로
-   해결 가능한 것으로 확인(루트 패키지는 0건). 빌드 도구 체인에만 걸리는
-   devDependency일 가능성이 높지만 실제로 돌려서 확인 필요.
+   → `isValidTask`/`isValidProfile`/`isValidAutoStartByDay`로 가져온 JSON의
+   구조를 엄격히 검증(허용된 `type`/필드 형태만 통과)하고, 파일 선택 전
+   "신뢰할 수 있는 파일만 가져오세요" 경고 다이얼로그 추가.
+2. ✅ **의존성 high severity 취약점** — 루트는 `js-yaml`(CVE-2026-59870, 쿼드러틱
+   CPU 소비, `electron-builder`의 전이 의존성), react-app은 `js-yaml`/`nanoid`
+   (size 0일 때 무한 루프) 2건. `npm audit fix`로 모두 해결, 루트/react-app
+   양쪽 다 0건 확인.
 
 ### 안정성
 
