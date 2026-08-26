@@ -38,18 +38,18 @@ Windows용 Electron 앱으로, "출근하면 매일 반복하는 작업"(크롬�
 
 현재 채널 요약:
 
-| 채널 | 방향 | 역할 |
-|---|---|---|
-| `load-config` / `save-config` | R↔M | `userData/config.json` 읽기/쓰기 |
-| `run-tasks` | R→M | 목록 전체를 누적 딜레이로 예약 실행 |
-| `run-single-task` | R→M | 딜레이 무시하고 즉시 1개 테스트 실행 |
-| `stop-tasks` | R→M | 아직 실행 안 된 예약분만 취소 |
-| `select-file` | R→M | 프로그램 경로 선택 다이얼로그 |
-| `export-config` / `import-config` | R↔M | 설정 JSON 파일로 백업/이전 |
-| `get-auto-start` / `set-auto-start` / `is-autostart` | R↔M | 윈도우 로그인 자동실행 |
-| `notify-dirty-state` | R→M (단방향, `send`) | 렌더러가 현재 상태+dirty 플래그를 알려, 창 닫기 시 저장 확인 다이얼로그를 띄울 수 있게 함 |
-| `task-execution-error` | M→R (단방향) | 실행 실패를 alert로 보이게 함 |
-| `task-started` / `run-tasks-finished` | M→R (단방향) | "출근 시작하기" 버튼의 진행 상태 표시 |
+| 채널                                                 | 방향                 | 역할                                                                                      |
+| ---------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------- |
+| `load-config` / `save-config`                        | R↔M                  | `userData/config.json` 읽기/쓰기                                                          |
+| `run-tasks`                                          | R→M                  | 목록 전체를 누적 딜레이로 예약 실행                                                       |
+| `run-single-task`                                    | R→M                  | 딜레이 무시하고 즉시 1개 테스트 실행                                                      |
+| `stop-tasks`                                         | R→M                  | 아직 실행 안 된 예약분만 취소                                                             |
+| `select-file`                                        | R→M                  | 프로그램 경로 선택 다이얼로그                                                             |
+| `export-config` / `import-config`                    | R↔M                  | 설정 JSON 파일로 백업/이전                                                                |
+| `get-auto-start` / `set-auto-start` / `is-autostart` | R↔M                  | 윈도우 로그인 자동실행                                                                    |
+| `notify-dirty-state`                                 | R→M (단방향, `send`) | 렌더러가 현재 상태+dirty 플래그를 알려, 창 닫기 시 저장 확인 다이얼로그를 띄울 수 있게 함 |
+| `task-execution-error`                               | M→R (단방향)         | 실행 실패를 alert로 보이게 함                                                             |
+| `task-started` / `run-tasks-finished`                | M→R (단방향)         | "출근 시작하기" 버튼의 진행 상태 표시                                                     |
 
 ## 4. 데이터 모델 & 저장 방식
 
@@ -79,8 +79,8 @@ AppConfig = { profiles: Profile[], activeProfileId, autoStartProfileId }
 ```js
 let totalDelay = 0;
 tasks.forEach((task) => {
-  totalDelay += task.delay;
-  setTimeout(() => runSingleTask(task), totalDelay * 1000);
+	totalDelay += task.delay;
+	setTimeout(() => runSingleTask(task), totalDelay * 1000);
 });
 ```
 
@@ -110,6 +110,7 @@ tasks.forEach((task) => {
    `run-tasks`로 실행.
 
 `autoStartArgs`는 패키징 여부로 값이 달라집니다:
+
 - 패키징됨 → `["--autostart"]` (exe 경로 자체가 곧 이 앱)
 - 개발 모드 → `[app.getAppPath(), "--autostart"]` (`electron.exe`는 범용 실행기라
   프로젝트 경로를 인자로 안 주면 로그인 시 어떤 앱을 열어야 할지 모름)

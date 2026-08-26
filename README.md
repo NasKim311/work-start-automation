@@ -40,6 +40,7 @@ Windows 데스크톱 앱입니다. 자주 여는 웹사이트와 프로그램을
 `contextBridge`로 노출하는 `window.electronAPI`를 통해서만 메인 프로세스와 통신합니다.
 
 새 IPC 기능을 추가하려면 아래 세 곳을 함께 수정해야 합니다:
+
 1. `electron/main.js`의 `ipcMain.handle(...)`
 2. `electron/preload.js`의 대응 브릿지 메서드
 3. `react-app/src/types.ts`의 `ElectronAPI` 인터페이스

@@ -1,44 +1,47 @@
 {
-  "name": "work-start-automation",
-  "version": "1.0.0",
-  "description": "매일 아침 반복되는 업무 준비를 한 번의 클릭으로 자동화하는 Windows 데스크톱 앱",
-  "main": "electron/main.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "cd react-app && npm run build",
-    "dist": "npm run build && electron-builder",
-    "test:e2e": "playwright test"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "electron": "^41.0.2",
-    "electron-builder": "^26.0.12"
-  },
-  "build": {
-    "appId": "com.deskready.app",
-    "productName": "DeskReady",
-    "files": [
-      "electron/**/*",
-      "react-app/dist/**/*"
-    ],
-    "directories": {
-      "output": "release"
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true
-    }
-  }
+	"name": "work-start-automation",
+	"version": "1.0.0",
+	"description": "매일 아침 반복되는 업무 준비를 한 번의 클릭으로 자동화하는 Windows 데스크톱 앱",
+	"main": "electron/main.js",
+	"scripts": {
+		"start": "electron .",
+		"build": "cd react-app && npm run build",
+		"dist": "npm run build && electron-builder",
+		"test:e2e": "playwright test",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"devDependencies": {
+		"@playwright/test": "^1.62.1",
+		"electron": "^41.0.2",
+		"electron-builder": "^26.0.12",
+		"prettier": "^3.9.6"
+	},
+	"build": {
+		"appId": "com.deskready.app",
+		"productName": "DeskReady",
+		"files": [
+			"electron/**/*",
+			"react-app/dist/**/*"
+		],
+		"directories": {
+			"output": "release"
+		},
+		"win": {
+			"icon": "build/icon.png",
+			"target": [
+				"nsis",
+				"portable"
+			]
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true,
+			"createDesktopShortcut": true
+		}
+	}
 }

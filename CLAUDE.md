@@ -83,6 +83,7 @@ shows a blank window again, check this first before anything else.
 ## Architecture
 
 Two separate npm packages, not a workspace:
+
 - **Repo root** (`package.json`, `electron/`) — the Electron main process. `main.js` is the
   Electron entrypoint (`"main"` field); has its own `node_modules`/lockfile.
 - **`react-app/`** — the Vite + React + TypeScript renderer, styled with Tailwind v4 (via
@@ -93,6 +94,7 @@ Two separate npm packages, not a workspace:
 **IPC boundary** — the renderer never touches Node/Electron APIs directly; everything goes
 through `electron/preload.js`'s `contextBridge`-exposed `window.electronAPI`. Any new IPC
 capability requires changes in three places kept in sync by hand:
+
 1. `ipcMain.handle(...)` (or `ipcMain.on(...)` for one-way notifications) in `electron/main.js`
 2. the matching bridge method in `electron/preload.js`
 3. the `ElectronAPI` interface in `react-app/src/types.ts`
@@ -118,6 +120,7 @@ run and when the last one has fired, so the "출근 시작하기" button can sho
 instead of no feedback at all while the cumulative delay elapses).
 
 **Task model** (`react-app/src/types.ts`): `{ type: "browser" | "program", title?, value, delay }`.
+
 - `type: "browser"` runs `chrome "<value>"` via `execFile("cmd.exe", ["/c", "start", "chrome", ...])`;
   `type: "program"` runs `value` directly (supports both raw `.exe` paths and `code "<folder>"`
   for VS Code).
@@ -134,7 +137,7 @@ instead of no feedback at all while the cumulative delay elapses).
   timeouts from the previous run (`pendingTimeouts`), so a stale run can't overlap a new one.
 
 **Config persistence** — saved as JSON at `app.getPath("userData")/config.json` (per-OS-user
-Electron data dir), *not* a repo-relative file. A root-level `config.json` was previously
+Electron data dir), _not_ a repo-relative file. A root-level `config.json` was previously
 committed by mistake and is being removed/gitignored — don't reintroduce a repo-root config
 file as a data store.
 
@@ -166,7 +169,7 @@ there's no separate scheduler/daemon.
 `electron.exe` binary, not to this app — without the app path as an argument, Windows would
 launch bare Electron at login with no idea which app to load. `get-auto-start` passes the same
 `autoStartArgs` to `app.getLoginItemSettings({ args: autoStartArgs })`: Windows treats a login
-item with different `args` as a *different* entry, so if get/set ever pass mismatched args,
+item with different `args` as a _different_ entry, so if get/set ever pass mismatched args,
 `openAtLogin` reads back `false` even right after a successful `set-auto-start` — the toggle
 looks broken (and silently resets to off on every restart) even though the registry entry is
 correct. Keep get/set using the exact same `autoStartArgs` value if this code changes.

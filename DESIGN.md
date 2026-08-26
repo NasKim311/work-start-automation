@@ -2,58 +2,58 @@
 name: DeskReady
 description: 매일 아침 반복되는 업무 준비를 한 번의 클릭으로 세팅하는 Windows 데스크톱 앱
 colors:
-  ink-navy: "#1F2A44"
-  paper-cream: "#FBF6EC"
-  card-cream: "#FFFDF8"
-  rule-tan: "#D8CBAE"
-  input-tan: "#B9AC8C"
-  meta-tan: "#A79C7F"
-  coral: "#C9634A"
-  label-ink: "#5B5340"
-  body-ink: "#8A8065"
+  ink-navy: '#1F2A44'
+  paper-cream: '#FBF6EC'
+  card-cream: '#FFFDF8'
+  rule-tan: '#D8CBAE'
+  input-tan: '#B9AC8C'
+  meta-tan: '#A79C7F'
+  coral: '#C9634A'
+  label-ink: '#5B5340'
+  body-ink: '#8A8065'
 typography:
   display:
-    fontFamily: "Caveat, cursive"
-    fontSize: "3.75rem"
+    fontFamily: 'Caveat, cursive'
+    fontSize: '3.75rem'
     fontWeight: 700
     lineHeight: 0.9
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   label:
-    fontFamily: "Pretendard Variable, Pretendard, -apple-system, system-ui, sans-serif"
-    fontSize: "11px"
+    fontFamily: 'Pretendard Variable, Pretendard, -apple-system, system-ui, sans-serif'
+    fontSize: '11px'
     fontWeight: 700
     lineHeight: 1.4
-    letterSpacing: "0.1em"
+    letterSpacing: '0.1em'
   body:
-    fontFamily: "Pretendard Variable, Pretendard, -apple-system, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: 'Pretendard Variable, Pretendard, -apple-system, system-ui, sans-serif'
+    fontSize: '1rem'
     fontWeight: 700
     lineHeight: 1.6
-    letterSpacing: "-0.01em"
+    letterSpacing: '-0.01em'
 rounded:
-  hero: "40px"
-  card: "24px"
-  stamp: "6px"
-  pill: "9999px"
+  hero: '40px'
+  card: '24px'
+  stamp: '6px'
+  pill: '9999px'
 spacing:
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "40px"
+  sm: '8px'
+  md: '16px'
+  lg: '24px'
+  xl: '40px'
 components:
   button-primary:
-    backgroundColor: "transparent"
-    textColor: "{colors.coral}"
-    rounded: "{rounded.stamp}"
-    padding: "10px 28px"
+    backgroundColor: 'transparent'
+    textColor: '{colors.coral}'
+    rounded: '{rounded.stamp}'
+    padding: '10px 28px'
   button-primary-hover:
-    backgroundColor: "{colors.coral}"
-    textColor: "{colors.card-cream}"
+    backgroundColor: '{colors.coral}'
+    textColor: '{colors.card-cream}'
   button-secondary:
-    backgroundColor: "transparent"
-    textColor: "{colors.label-ink}"
-    rounded: "{rounded.stamp}"
-    padding: "10px 22px"
+    backgroundColor: 'transparent'
+    textColor: '{colors.label-ink}'
+    rounded: '{rounded.stamp}'
+    padding: '10px 22px'
 ---
 
 # Design System: DeskReady
@@ -71,6 +71,7 @@ system replaces the product's earlier "Jinjja Seoul" teal-and-pill identity outr
 look is retired and should not be reintroduced or blended with this one.
 
 **Key Characteristics:**
+
 - Paper, not glass: dashed borders and ruled-line texture stand in for shadows and gradients
 - One handwritten voice (Caveat) reserved for the "DeskReady" wordmark only; everything else
   reads in the product's existing Korean-first sans (Pretendard) at a confident bold weight
@@ -82,13 +83,16 @@ look is retired and should not be reintroduced or blended with this one.
 Cool ink navy for structure, warm coral for the one action that matters, on cream paper.
 
 ### Primary
+
 - **Ink Navy** (`#1F2A44`): the hero band background and the default body-text color.
 
 ### Secondary
+
 - **Coral** (`#C9634A`): the primary "stamp" button, active tab underline, focus state, and
   task-row icons. Reserved for the one thing on a card that wants to be pressed or noticed.
 
 ### Neutral
+
 - **Paper Cream** (`#FBF6EC`): page background, carrying a faint ruled-line texture
   (`repeating-linear-gradient`, 38px rhythm, 5% navy).
 - **Card Cream** (`#FFFDF8`): the note-card surface sitting on top of the page.
@@ -99,6 +103,7 @@ Cool ink navy for structure, warm coral for the one action that matters, on crea
   cream, used instead of true gray so text stays inside the paper's warm palette.
 
 ### Named Rules
+
 **The One Stamp Rule.** Coral fill (not just coral text) appears on at most one button per
 card — the primary action. Everything else stays an outline or plain text so the stamp reads
 as a deliberate mark, not decoration.
@@ -112,6 +117,7 @@ as a deliberate mark, not decoration.
 handwritten flourish on the product name — like a printed form with one line filled in by hand.
 
 ### Hierarchy
+
 - **Display** (700, `~3.75rem`/`text-6xl`, Caveat, line-height 0.9): the hero wordmark only.
 - **Section Label** (700, `11px`, uppercase, `0.1em` tracking, coral): card headers such as
   "오늘의 설정" / "새로운 작업 추가" / "나의 데스크 루틴 리스트".
@@ -119,6 +125,7 @@ handwritten flourish on the product name — like a printed form with one line f
 - **Meta** (600–700, `12px`, meta tan): delay/type meta text, placeholders.
 
 ### Named Rules
+
 **The Handwriting Is Singular Rule.** Caveat renders exactly one string on screen at a time
 (the wordmark). A second handwritten element would turn a signature into a costume.
 
@@ -138,6 +145,7 @@ lift the "page" off the ruled background; nothing else in the system carries a s
 otherwise comes from the dashed border and the ruled-paper texture, not from layered elevation.
 
 ### Named Rules
+
 **The Paper, Not Glass Rule.** Reach for a dashed border or a ruled line before reaching for a
 shadow or gradient. Shadows are for the page-level card only, never for buttons or rows.
 
@@ -152,6 +160,7 @@ is the truest real-world referent for an on/off control.
 ## Components
 
 ### Buttons ("Stamps")
+
 - **Shape:** `6px` radius rectangle, never a pill.
 - **Primary:** transparent fill, coral border and text, slight `-1deg` rotation like a hand
   stamp; fills solid coral with cream text on hover.
@@ -159,40 +168,47 @@ is the truest real-world referent for an on/off control.
   actions like "설정 저장".
 
 ### Type Tabs (segmented replacement)
+
 - **Style:** plain text buttons in a row, no pill/tray background; the active option gets a
   `2px` coral underline and coral text, the inactive option stays tan. Used for the
   웹사이트/프로그램 task-type switch.
 
 ### Inputs
+
 - **Style:** underline-only — transparent background, `1.5px` tan bottom border, no fill, no
   radius. Focus shifts the underline to coral. This replaces the prior pill/gray-fill inputs
   system-wide.
 
 ### Toggle Switch
+
 - **Style:** pill track with a coral border, coral dot that slides — the one pill shape kept
   in the system, used only for the physical-switch-like auto-start control. Off: transparent
   track, coral dot. On: track fills solid coral and the dot switches to cream, so on/off reads
   at a glance instead of relying on dot position alone.
 
 ### Task Rows
+
 - **Style:** no card, no shadow, no hover-lift. Each row is icon (line-drawn, in a coral-tinted
   circle) + bold navy title + tan meta line, separated from the next row by a `1.5px` dashed
   divider. The row being edited breaks this pattern deliberately: it gets a solid coral border,
   rounded corners, and a warm highlighted fill so it reads as "lifted out" of the list.
 
 ### Section Label
+
 - **Style:** `11px` uppercase coral text with wide tracking, no background, no border — a
   handwritten-planner section tag rather than a UI eyebrow/kicker.
 
 ## Do's and Don'ts
 
 ### Do:
+
 - **Do** keep coral fill to one stamp button per card; everything else stays outline or text.
 - **Do** use dashed borders and ruled-line texture as the system's primary depth cue.
 - **Do** keep Caveat to the single "DeskReady" wordmark.
 - **Do** style form controls as marks on paper (underlines, stamps, ticks), not glossy chrome.
 
 ### Don't:
+
 - **Don't** reintroduce the retired teal (`#0082B2`) / bright-orange (`#E54D26`) pill system —
   it is fully replaced, not a fallback.
 - **Don't** add card shadows or hover-lift to individual task rows; the list card carries the

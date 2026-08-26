@@ -1,0 +1,16 @@
+node_modules
+dist
+release
+build/icon.png
+package-lock.json
+pnpm-lock.yaml
+*.svg
+.claude
+.impeccable
+test-results
+playwright-report
+coverage
+.vscode
+.idea
+*.min.js
+*.min.css

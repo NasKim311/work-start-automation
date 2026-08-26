@@ -22,7 +22,7 @@ between them, in one click or automatically at Windows login.
 ## Positioning
 
 Not a browser bookmark manager or a generic task scheduler — a purpose-built, single-click
-Windows morning-routine launcher that models a *sequence* of arrival actions (open this, then
+Windows morning-routine launcher that models a _sequence_ of arrival actions (open this, then
 that, N seconds later) and can trigger itself unattended at login.
 
 ## Operating Context
